@@ -171,14 +171,16 @@ async function main() {
       const start = requests.length;
       await view.mouse.move(0, 0);
       assert.equal(requests.length, start, "Pointer movement must not query the provider");
-      const geometry = await panel().getByRole("button", { name: "查看 claude-test 趋势" }).evaluate(String.raw`(el) => new Promise(resolve => {
+      const geometry = await panel().getByRole("button", { name: "查看 claude-test 趋势" }).evaluate(String.raw`(() => new Promise(resolve => {
+        const el = document.querySelector('[data-testid="model-insight-panel"] button[aria-label="查看 claude-test 趋势"]');
+        if (!el) throw new Error("Model detail button is missing");
         const samples = []; let frames = 0;
         const sample = () => {
           const rect = el.getBoundingClientRect();
           samples.push({ x: rect.x, y: rect.y, width: rect.width, height: rect.height, transform: getComputedStyle(el).transform });
           if (++frames === 8) resolve(samples); else requestAnimationFrame(sample);
         }; requestAnimationFrame(sample);
-      })`);
+      }))()`);
       console.log(JSON.stringify({ check: "model-detail-button-geometry", samples: geometry }));
       const pending = view.waitForResponse((r) => r.url().endsWith(`/accounts/${ids.modern}/models/detail`) && r.request().method() === "POST");
       const [, response] = await Promise.all([panel().getByRole("button", { name: "查看 claude-test 趋势" }).click(), pending]);
