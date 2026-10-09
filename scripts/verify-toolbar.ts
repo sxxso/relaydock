@@ -54,41 +54,43 @@ export async function verifyToolbarMenus(page: Page, api: Api, out: string) {
     await page.setViewportSize({ width: 768, height: 240 });
     await page.getByRole("combobox", { name: "筛选分组", exact: true }).click();
     await page.keyboard.press("Escape");
-    await choose(page, "筛选分组", "菜单分组 18");
-    await page.getByRole("combobox", { name: "筛选分组", exact: true }).evaluate((el) => el.scrollIntoView({ block: "center" }));
-    await page.getByRole("combobox", { name: "筛选分组", exact: true }).click();
-    try { await settleSelect(page); }
-    catch (error) {
-      console.log("Short menu settle failure:", await page.evaluate(String.raw`(() => {
-        return [...document.querySelectorAll('.atlas-select-content, .atlas-select-content > *, .atlas-select-trigger[data-state="open"]')].map(element => {
-          const style = getComputedStyle(element);
-          return {className:element.className, bounds:element.getBoundingClientRect().toJSON(), clientHeight:element.clientHeight,
-            height:style.height, maxHeight:style.maxHeight, minHeight:style.minHeight, flex:style.flex,
-            available:style.getPropertyValue('--radix-select-content-available-height'), side:element.getAttribute('data-side')};
-        });
-      })()`));
-      await page.screenshot({ path: join(out, "toolbar-short-menu-failure.png") });
-      throw error;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      await choose(page, "筛选分组", "菜单分组 18");
+      await page.getByRole("combobox", { name: "筛选分组", exact: true }).evaluate((el) => el.scrollIntoView({ block: "center" }));
+      await page.getByRole("combobox", { name: "筛选分组", exact: true }).click();
+      try { await settleSelect(page); }
+      catch (error) {
+        console.log("Short menu settle failure:", await page.evaluate(String.raw`(() => {
+          return [...document.querySelectorAll('.atlas-select-content, .atlas-select-content > *, .atlas-select-trigger[data-state="open"]')].map(element => {
+            const style = getComputedStyle(element);
+            return {className:element.className, bounds:element.getBoundingClientRect().toJSON(), clientHeight:element.clientHeight,
+              height:style.height, maxHeight:style.maxHeight, minHeight:style.minHeight, flex:style.flex,
+              available:style.getPropertyValue('--radix-select-content-available-height'), side:element.getAttribute('data-side')};
+          });
+        })()`));
+        await page.screenshot({ path: join(out, "toolbar-short-menu-failure.png") });
+        throw error;
+      }
+      await withinViewport(page, ".atlas-select-content");
+      const shortViewport = await page.locator(".atlas-select-viewport").boundingBox();
+      if (!shortViewport || shortViewport.height < 44) {
+        console.log("Short menu geometry:", await page.locator(".atlas-select-content").evaluate((menu) => {
+          return [menu, ...Array.from(menu.children), document.querySelector('.atlas-select-trigger[data-state="open"]')!].map((element) => {
+            const style = getComputedStyle(element);
+            return { class: element.className, bounds: element.getBoundingClientRect().toJSON(),
+              height: style.height, maxHeight: style.maxHeight, minHeight: style.minHeight, flex: style.flex,
+              available: style.getPropertyValue("--radix-select-content-available-height"), side: element.getAttribute("data-side") };
+          });
+        }));
+        await page.screenshot({ path: join(out, "toolbar-short-menu-failure.png") });
+      }
+      assert.ok(shortViewport && shortViewport.height >= 44, `A short menu must show a full usable option, got ${JSON.stringify(shortViewport)}`);
+      await page.keyboard.press("End");
+      await page.waitForFunction(() => document.querySelector('.atlas-select-item[data-highlighted] .atlas-select-label')?.textContent === "菜单分组 35");
+      await highlightedChoiceVisible(page);
+      await page.screenshot({ path: join(out, "toolbar-short-menu.png") });
+      await page.keyboard.press("Enter");
     }
-    await withinViewport(page, ".atlas-select-content");
-    const shortViewport = await page.locator(".atlas-select-viewport").boundingBox();
-    if (!shortViewport || shortViewport.height < 44) {
-      console.log("Short menu geometry:", await page.locator(".atlas-select-content").evaluate((menu) => {
-        return [menu, ...Array.from(menu.children), document.querySelector('.atlas-select-trigger[data-state="open"]')!].map((element) => {
-          const style = getComputedStyle(element);
-          return { class: element.className, bounds: element.getBoundingClientRect().toJSON(),
-            height: style.height, maxHeight: style.maxHeight, minHeight: style.minHeight, flex: style.flex,
-            available: style.getPropertyValue("--radix-select-content-available-height"), side: element.getAttribute("data-side") };
-        });
-      }));
-      await page.screenshot({ path: join(out, "toolbar-short-menu-failure.png") });
-    }
-    assert.ok(shortViewport && shortViewport.height >= 44, `A short menu must show a full usable option, got ${JSON.stringify(shortViewport)}`);
-    await page.keyboard.press("End");
-    await page.waitForFunction(() => document.querySelector('.atlas-select-item[data-highlighted] .atlas-select-label')?.textContent === "菜单分组 35");
-    await highlightedChoiceVisible(page);
-    await page.screenshot({ path: join(out, "toolbar-short-menu.png") });
-    await page.keyboard.press("Enter");
     await choose(page, "筛选分组", "所有分组");
     for (const size of [{ width: 1440, height: 720 }, { width: 768, height: 360 }, { width: 375, height: 500 }]) {
       await page.setViewportSize(size);

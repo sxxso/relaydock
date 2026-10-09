@@ -233,6 +233,17 @@
   scroll-padding-block: 5px;
 }
 
+/* A short landscape viewport can leave only ~82px on either Popper side.
+   Reserve that space for choices; fixed headers and two 24px arrows can
+   otherwise shrink the actual scroll viewport to zero. Wheel, touch and
+   Radix keyboard scrolling remain available. */
+@media (max-height: 360px) {
+  .atlas-select-content .atlas-select-header,
+  .atlas-select-content .atlas-select-scroll {
+    display: none;
+  }
+}
+
 .atlas-select-separator {
   block-size: 1px;
   margin: 7px 10px;
