@@ -142,7 +142,7 @@ async function main() {
     const panel = () => view.getByTestId("model-insight-panel");
     const update = async (variant: string, hours = 24) => {
       const wait = view.waitForResponse((r) => r.url().endsWith(`/accounts/${ids[variant]}/models`) && r.request().method() === "POST");
-      await panel().getByTestId("model-refresh").click(); const response = await wait;
+      const [, response] = await Promise.all([panel().getByTestId("model-refresh").click(), wait]);
       assert.equal(response.status(), 200); const data = await response.json(); assert.equal(data.hours, hours); return data;
     };
     await check("open-empty-cache-makes-no-external-request", async () => {
@@ -161,11 +161,14 @@ async function main() {
       await panel().getByLabel("搜索模型").fill(""); await panel().getByLabel("仅显示有流量").check(); assert.equal(await panel().getByTestId("model-row").count(), 2);
       await panel().getByLabel("仅显示有流量").uncheck();
       await panel().getByRole("combobox", { name: "模型排序" }).click(); await view.getByRole("option", { name: "成功率优先" }).click();
+      await view.getByRole("option", { name: "成功率优先" }).waitFor({ state: "hidden" });
+      await until(async () => (await panel().getByRole("combobox", { name: "模型排序" }).innerText()).includes("成功率优先"), "Sort choice must finish applying before the next action");
       assert.equal(requests.length, start);
     });
     await check("explicit-model-detail-groups-and-trend", async () => {
       const pending = view.waitForResponse((r) => r.url().endsWith(`/accounts/${ids.modern}/models/detail`) && r.request().method() === "POST");
-      await panel().getByRole("button", { name: "查看 claude-test 趋势" }).click(); const data = await (await pending).json(); assert.equal(data.source, "perf"); assert.equal(data.groups[0].group, "default"); assert.ok(data.groups[0].series.length);
+      const [, response] = await Promise.all([panel().getByRole("button", { name: "查看 claude-test 趋势" }).click(), pending]);
+      const data = await response.json(); assert.equal(data.source, "perf"); assert.equal(data.groups[0].group, "default"); assert.ok(data.groups[0].series.length);
       await panel().getByTestId("model-detail").waitFor();
       await view.screenshot({ path: join(out, "model-detail.png") }); screenshots.push("model-detail.png");
     });
@@ -192,9 +195,10 @@ async function main() {
       await view.keyboard.press("Enter");
       await until(async () => (await sort.innerText()).includes("成功率优先"), "Keyboard selection must apply success-rate sorting");
       assert.equal(requests.length, start);
-      const pending = view.waitForResponse((r) => r.url().endsWith(`/accounts/${ids.modern}/models/detail`) && r.request().method() === "POST");
       const trend = panel().getByRole("button", { name: "查看 claude-test 趋势" });
-      await trend.focus(); await trend.press("Enter"); assert.equal((await pending).status(), 200);
+      await trend.focus();
+      const pending = view.waitForResponse((r) => r.url().endsWith(`/accounts/${ids.modern}/models/detail`) && r.request().method() === "POST");
+      const [, response] = await Promise.all([trend.press("Enter"), pending]); assert.equal(response.status(), 200);
       const detail = panel().getByTestId("model-detail"); await detail.waitFor(); await detail.scrollIntoViewIfNeeded();
       assert.equal(await detail.getByRole("img", { name: "成功率趋势，纵轴从 0% 到 100%" }).count(), 1);
       await detail.screenshot({ path: join(out, "keyboard-trend.png") }); screenshots.push("keyboard-trend.png");
@@ -210,14 +214,14 @@ async function main() {
     });
     await check("403-is-not-automatic-log-fallback", async () => {
       await open("denied"); const start = requests.length;
-      const wait = view.waitForResponse((r) => r.url().endsWith(`/accounts/${ids.denied}/models`) && r.request().method() === "POST"); await panel().getByTestId("model-refresh").click(); await wait;
+      const wait = view.waitForResponse((r) => r.url().endsWith(`/accounts/${ids.denied}/models`) && r.request().method() === "POST"); await Promise.all([panel().getByTestId("model-refresh").click(), wait]);
       assert.ok(!requests.slice(start).some((r) => r.path === "/api/log/self"));
       await panel().getByRole("combobox", { name: "数据来源" }).click(); await view.getByRole("option", { name: "我的调用记录", exact: true }).click();
       const data = await update("denied"); assert.equal(data.source, "log");
     });
     await check("failure-preserves-last-cache-and-visible-feedback", async () => {
       await open("modern"); await panel().getByTestId("model-row").first().waitFor(); modernDenied = true;
-      const pending = view.waitForResponse((r) => r.url().endsWith(`/accounts/${ids.modern}/models`) && r.request().method() === "POST"); await panel().getByTestId("model-refresh").click(); await pending;
+      const pending = view.waitForResponse((r) => r.url().endsWith(`/accounts/${ids.modern}/models`) && r.request().method() === "POST"); await Promise.all([panel().getByTestId("model-refresh").click(), pending]);
       assert.ok(await panel().getByTestId("model-row").count() >= 3); assert.ok(!(await panel().innerText()).includes(rawLogSecret));
       assert.ok((await panel().innerText()).includes("站点公开流量统计"));
       assert.ok(/98\.2/.test(await panel().getByTestId("model-row").filter({ hasText: "claude-test" }).innerText()), "Previous metric must remain visible after failure");
@@ -233,6 +237,7 @@ async function main() {
     });
     await check("late-response-after-close-not-applied-to-another-account", async () => {
       delay = 250; const pending = view.waitForResponse((r) => r.url().endsWith(`/accounts/${ids.modern}/models`) && r.request().method() === "POST");
+      void pending.catch(() => {}); // Navigation intentionally precedes awaiting the response; preserve cleanup on failure.
       await panel().getByTestId("model-refresh").click(); await view.getByRole("button", { name: "关闭对话框" }).click();
       await open("legacy"); await panel().getByTestId("model-row").first().waitFor(); await pending; delay = 0;
       assert.ok((await panel().innerText()).includes("我的调用记录"));

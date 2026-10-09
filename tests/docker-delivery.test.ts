@@ -114,7 +114,7 @@ it("refreshes the owned container binding after restart instead of reusing the o
   expect(await m.readPublishedOrigin(docker, "relaydock-smoke-012345abcdef-app")).toBe("http://127.0.0.1:49201");
   expect(commands).toEqual(Array(2).fill(["port", "relaydock-smoke-012345abcdef-app", "3000/tcp"]));
   const script = readFileSync(resolve("scripts/verify-docker.mjs"), "utf8");
-  expect(/docker\(\["start", names\.app\]\);\s*origin = await readPublishedOrigin\(docker, names\.app\)/.test(script)).toBe(true);
+  expect(/docker\(\["start", names\.app\]\);\s*origin = await readPublishedOrigin\(docker, names\["app-gateway"\]\)/.test(script)).toBe(true);
 });
 it("ignores only exact owned-resource absence, never Docker context or connection failures", async () => {
   const m = await helper();
@@ -143,5 +143,20 @@ it("retains the application license in the final non-root runtime image", () => 
   const runtime = dockerfile.split(/^FROM [^\r\n]+ AS runtime\r?\n/m)[1];
   expect(runtime, "runtime stage is missing").toBeDefined();
   expect(runtime).toMatch(/^COPY --from=build --chown=node:node \/app\/LICENSE \.\/LICENSE$/m);
+});
+
+it("publishes only an owned loopback gateway and attaches it before starting", async () => {
+  const m = await helper();
+  const prefix = "relaydock-smoke-012345abcdef-";
+  const commands: string[][] = [];
+  await m.startLoopbackGateway(async (args: string[]) => { commands.push(args); return ""; }, {
+    name: prefix + "app-gateway", target: prefix + "app", image: prefix + "image",
+    internalNetwork: prefix + "network", ingressNetwork: prefix + "ingress", label: "relaydock.smoke.run=012345abcdef",
+  });
+  expect(commands[0].slice(0, 13)).toEqual(["create", "--name", prefix + "app-gateway", "--label", "relaydock.smoke.run=012345abcdef", "--network", prefix + "ingress", "--read-only", "--cap-drop", "ALL", "--publish", "127.0.0.1::3000", "--entrypoint"]);
+  expect(commands[0].at(-1)).toBe(prefix + "app");
+  expect(commands.slice(1)).toEqual([["network", "connect", prefix + "network", prefix + "app-gateway"], ["start", prefix + "app-gateway"]]);
+  expect(await m.readPublishedOrigin(async () => "127.0.0.1:49152", prefix + "app-gateway")).toBe("http://127.0.0.1:49152");
+  expect(m.isMissingOwnedResource({ stderr: "Error: No such container: " + prefix + "app-gateway" }, "container", prefix + "app-gateway")).toBe(true);
 });
 

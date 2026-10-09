@@ -12,7 +12,7 @@ export function parseLoopbackBinding(value) {
 }
 export function resourceName(token, kind) {
   assert.match(token, /^[a-f0-9]{12}$/);
-  assert.ok(["app", "restored", "fixture", "network", "data", "migration", "copy", "image"].includes(kind), "Unknown owned resource kind");
+  assert.ok(["app", "restored", "app-gateway", "restored-gateway", "ingress", "fixture", "network", "data", "migration", "copy", "image"].includes(kind), "Unknown owned resource kind");
   return `relaydock-smoke-${token}-${kind}`;
 }
 export function deniedSourceName(name) {
@@ -90,11 +90,21 @@ export function assertDataOnlyBackup(backup, secrets) {
   for (const secret of secrets) if (secret) assert.ok(!serialized.includes(secret), "Data backup contains a fixture secret");
 }
 export async function readPublishedOrigin(docker, name) {
-  assert.match(name, /^relaydock-smoke-[a-f0-9]{12}-(?:app|restored)$/);
+  assert.match(name, /^relaydock-smoke-[a-f0-9]{12}-(?:app|restored)(?:-gateway)?$/);
   return parseLoopbackBinding(await docker(["port", name, "3000/tcp"]));
 }
+export async function startLoopbackGateway(docker, { name, target, image, internalNetwork, ingressNetwork, label }) {
+  for (const value of [name, target, image, internalNetwork, ingressNetwork])
+    assert.match(value, /^relaydock-smoke-[a-f0-9]{12}-[a-z-]+$/);
+  // Only this fixed TCP forwarder has an ingress network. The application and
+  // balance fixture retain their internal-only network and cannot route through it.
+  const code = 'const net=require("node:net");net.createServer(client=>{const upstream=net.connect(3000,process.argv[1]);client.on("error",()=>upstream.destroy());upstream.on("error",()=>client.destroy());client.on("close",()=>upstream.destroy());upstream.on("close",()=>client.destroy());client.pipe(upstream);upstream.pipe(client);}).listen(3000,"0.0.0.0");';
+  await docker(["create", "--name", name, "--label", label, "--network", ingressNetwork, "--read-only", "--cap-drop", "ALL", "--publish", "127.0.0.1::3000", "--entrypoint", "node", image, "-e", code, target]);
+  await docker(["network", "connect", internalNetwork, name]);
+  await docker(["start", name]);
+}
 export function isMissingOwnedResource(error, type, name) {
-  if (!["container", "volume", "network", "image"].includes(type) || !/^relaydock-smoke-[a-f0-9]{12}-[a-z]+$/.test(name)) return false;
+  if (!["container", "volume", "network", "image"].includes(type) || !/^relaydock-smoke-[a-f0-9]{12}-[a-z-]+$/.test(name)) return false;
   const text = String(error?.stderr ?? "").trim();
   const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const prefix = "(?:Error: *|Error response from daemon: *)?";

@@ -4,7 +4,7 @@ import { randomBytes } from "node:crypto";
 import { existsSync, lstatSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { promisify } from "node:util";
-import { assertDataOnlyBackup, cleanupDockerContext, createDockerContext, readPublishedOrigin, isMissingOwnedResource, resourceName } from "./docker-smoke-lib.mjs";
+import { assertDataOnlyBackup, cleanupDockerContext, createDockerContext, readPublishedOrigin, startLoopbackGateway, isMissingOwnedResource, resourceName } from "./docker-smoke-lib.mjs";
 
 const exec = promisify(execFile);
 const args = process.argv.slice(2);
@@ -19,7 +19,7 @@ async function main() {
   const root = realpathSync(resolve(process.cwd()));
   assert.equal(JSON.parse(readFileSync(join(root, "package.json"), "utf8")).name, "relaydock-atlas", "Run inside the application");
   const token = randomBytes(6).toString("hex");
-  const names = Object.fromEntries(["app", "restored", "fixture", "network", "data", "migration", "copy", "image"].map((kind) => [kind, resourceName(token, kind)]));
+  const names = Object.fromEntries(["app", "restored", "app-gateway", "restored-gateway", "ingress", "fixture", "network", "data", "migration", "copy", "image"].map((kind) => [kind, resourceName(token, kind)]));
   const label = "relaydock.smoke.run";
   const abort = new AbortController();
   const interrupted = () => abort.abort();
@@ -66,8 +66,11 @@ async function main() {
   };
   const fixtureHits = async () => Number(await docker(["exec", names.fixture, "node", "-e", 'fetch("http://127.0.0.1:4010/hits").then(r=>r.json()).then(x=>console.log(x.hits))']));
   const startApp = async (kind, volume) => {
-    await docker(["run", "--detach", "--name", names[kind], "--label", `${label}=${token}`, "--network", names.network, "--mount", `type=volume,src=${volume},dst=/app/data`, "--publish", "127.0.0.1::3000", "--env-file", join(ctx.dir, ".env.smoke"), names.image]);
-    origin = await readPublishedOrigin(docker, names[kind]);
+    operation = "start-internal-app";
+    await docker(["run", "--detach", "--name", names[kind], "--label", `${label}=${token}`, "--network", names.network, "--mount", `type=volume,src=${volume},dst=/app/data`, "--env-file", join(ctx.dir, ".env.smoke"), names.image]);
+    operation = "start-loopback-gateway";
+    await startLoopbackGateway(docker, { name: names[kind + "-gateway"], target: names[kind], image: names.image, internalNetwork: names.network, ingressNetwork: names.ingress, label: `${label}=${token}` });
+    origin = await readPublishedOrigin(docker, names[kind + "-gateway"]);
     await wait(); await login();
   };
   try {
@@ -81,6 +84,7 @@ async function main() {
     });
     await check("owned-internal-network-and-volumes", async () => {
       await docker(["network", "create", "--internal", "--label", `${label}=${token}`, names.network]);
+      await docker(["network", "create", "--label", `${label}=${token}`, names.ingress]);
       for (const volume of [names.data, names.migration]) await docker(["volume", "create", "--label", `${label}=${token}`, volume]);
       assert.equal(await docker(["network", "inspect", "--format", "{{.Internal}}", names.network]), "true");
       writeFileSync(join(ctx.dir, ".env.smoke"), `RELAYDOCK_ADMIN_PASSWORD=${password}\nRELAYDOCK_PRIVATE_HOSTS=${names.fixture}\nRELAYDOCK_PUBLIC_URL=\nRELAYDOCK_DNS_MODE=system\nNEXT_TELEMETRY_DISABLED=1\n`, { mode: 0o600, flag: "wx" });
@@ -104,7 +108,7 @@ async function main() {
     });
     await check("encrypted-credential-and-balance-survive-restart", async () => {
       await docker(["stop", "--time", "10", names.app]); await docker(["start", names.app]);
-      origin = await readPublishedOrigin(docker, names.app);
+      origin = await readPublishedOrigin(docker, names["app-gateway"]);
       await wait(); await login();
       const { data } = await api("accounts");
       assert.equal(data.accounts.find((a) => a.id === accountId)?.balance, "11");
@@ -156,13 +160,13 @@ async function main() {
   } finally {
     // Inspect ownership labels even after partial failures; never prune, enumerate, or delete user resources.
     if (ready) {
-      for (const [type, name] of [["container", names.copy], ["container", names.app], ["container", names.restored], ["container", names.fixture], ["volume", names.data], ["volume", names.migration], ["network", names.network], ["image", names.image]]) {
+      for (const [type, name] of [["container", names.copy], ["container", names["app-gateway"]], ["container", names["restored-gateway"]], ["container", names.app], ["container", names.restored], ["container", names.fixture], ["volume", names.data], ["volume", names.migration], ["network", names.network], ["network", names.ingress], ["image", names.image]]) {
         try {
           let owner;
           try { owner = await docker([type, "inspect", "--format", `{{ index ${["container", "image"].includes(type) ? ".Config.Labels" : ".Labels"} "${label}" }}`, name], 15000, true); }
           catch (error) { if (isMissingOwnedResource(error, type, name)) continue; throw error; }
           assert.equal(owner, token, "Refuse to clean a foreign resource");
-          await docker([type, "rm", ...(type === "container" ? ["--force"] : []), name], 30000, true);
+          await docker([type, "rm", ...(type === "container" ? ["--force", "--volumes"] : []), name], 30000, true);
         } catch { report.cleanupErrors.push(type); }
       }
     }
