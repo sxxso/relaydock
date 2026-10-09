@@ -24,6 +24,7 @@ import { verifyWorkspaceFrames } from "./verify-workspace-frames";
 import { verifyAppearance } from "./verify-appearance-aff";
 import type { GroupLayout } from "../src/lib/group-layout";
 import { cleanRuntimeEnv } from "./isolated-runtime";
+import { listenerPids, processStartTicks } from "./linux-listener-snapshot";
 import {
   boundedLog,
   buildIsolatedSource,
@@ -132,10 +133,22 @@ async function deadline<T>(
   }
 }
 async function owners3000(): Promise<Owner[]> {
+  if (process.platform === "linux") {
+    const text = await new Promise<string>((ok, fail) =>
+      execFile("ss", ["-H", "-ltnp", "sport", "=", ":3000"],
+        { env: cleanRuntimeEnv(), timeout: 20_000, maxBuffer: 8192 },
+        (error, stdout) => error ? fail(error) : ok(stdout)),
+    );
+    return listenerPids(text).map((pid) => ({
+      pid,
+      name: readFileSync(`/proc/${pid}/comm`, "utf8").trim(),
+      startedAt: processStartTicks(readFileSync(`/proc/${pid}/stat`, "utf8"), pid),
+    }));
+  }
   assert.equal(
     process.platform,
     "win32",
-    "3000 owner protection currently requires Windows",
+    "3000 owner protection supports Windows and Linux",
   );
   const code =
     "$ErrorActionPreference='Stop'; $ids=@(Get-NetTCPConnection -State Listen -ErrorAction Stop | " +

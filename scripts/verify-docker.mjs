@@ -31,13 +31,14 @@ async function main() {
     if (process.env[key] !== undefined) env[key] = process.env[key];
   const docker = async (command, timeout = 60000, cleanup = false) => {
     const result = await exec("docker", command, { cwd: root, env, windowsHide: true, encoding: "utf8", maxBuffer: 16 * 1024 * 1024, timeout, signal: cleanup ? undefined : abort.signal });
-    return result.stdout.trim();
+    return (command[0] === "logs" ? result.stdout + result.stderr : result.stdout).trim();
   };
   const check = async (name, task) => { step = name; await task(); report.checks.push({ name, status: "PASS" }); };
   const password = `fixture-admin-${randomBytes(18).toString("hex")}`;
   const credential = `fixture-query-${randomBytes(18).toString("hex")}`;
-  let cookie = "", csrf = "", origin = "", accountId = "";
+  let cookie = "", csrf = "", origin = "", accountId = "", operation = "";
   const api = async (path, method = "GET", body) => {
+    operation = `${method} ${path.split("/")[0]}`;
     const headers = { origin, ...(cookie ? { cookie } : {}), ...(csrf ? { "x-csrf-token": csrf } : {}) };
     if (body !== undefined) headers["content-type"] = "application/json";
     const response = await fetch(`${origin}/api/${path}`, { method, headers, body: body === undefined ? undefined : JSON.stringify(body), signal: AbortSignal.any([abort.signal, AbortSignal.timeout(15000)]) });
@@ -45,11 +46,14 @@ async function main() {
     return { response, data: await response.json() };
   };
   const wait = async () => {
+    operation = "wait-for-session";
+    let lastStatus = null;
     for (let i = 0; i < 100; i++) {
       if (abort.signal.aborted) throw new Error("Canceled");
-      try { const response = await fetch(`${origin}/api/auth/session`, { signal: AbortSignal.timeout(1000) }); if (response.ok) return; } catch {}
+      try { const response = await fetch(`${origin}/api/auth/session`, { signal: AbortSignal.timeout(1000) }); lastStatus = response.status; if (response.ok) return; } catch {}
       await new Promise((done) => setTimeout(done, 300));
     }
+    report.readinessLastHttpStatus = lastStatus;
     throw new Error("Local container did not become ready");
   };
   const login = async () => {
@@ -124,9 +128,29 @@ async function main() {
       report.fixtureBalanceRequests = await fixtureHits();
     });
     report.status = "PASS";
-  } catch {
+  } catch (error) {
     report.status = abort.signal.aborted ? "CANCELED" : "FAIL";
     report.failedCheck = step;
+    // Fixed categories and state numbers only: never publish Docker command arguments,
+    // raw logs, response bodies, credentials, cookies, or environment variables.
+    report.failedOperation = operation || "docker-command";
+    report.failureKind = error?.name === "AssertionError" ? "ASSERTION" : error?.code === "ETIMEDOUT" ? "TIMEOUT" : "RUNTIME";
+    if (typeof error?.actual === "number") report.actualNumber = error.actual;
+    if (typeof error?.expected === "number") report.expectedNumber = error.expected;
+    for (const kind of ["app", "restored"]) {
+      try {
+        const state = JSON.parse(await docker(["inspect", "--format", "{{json .State}}", names[kind]], 15000, true));
+        report[kind + "State"] = { status: state.Status, exitCode: state.ExitCode, oomKilled: state.OOMKilled };
+        const logs = await docker(["logs", "--tail", "80", names[kind]], 15000, true);
+        report[kind + "LogSignals"] = {
+          moduleMissing: /Cannot find module|MODULE_NOT_FOUND/.test(logs),
+          nativeBindingMissing: /Could not locate the bindings file/.test(logs),
+          permissionDenied: /EACCES|SQLITE_READONLY/.test(logs),
+          databaseOpenFailed: /SQLITE_CANTOPEN/.test(logs),
+          ready: /Ready in/.test(logs),
+        };
+      } catch {}
+    }
     report.checks.push({ name: step, status: "FAIL" });
     process.exitCode = 1;
   } finally {
