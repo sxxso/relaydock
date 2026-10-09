@@ -1,0 +1,6 @@
+# Optional proxy override; the existing compose.yaml remains the base file.
+# Use explicitly: docker compose -f compose.yaml -f docker-compose.yml up -d
+services:
+  atlas:
+    environment:
+      RELAYDOCK_QUERY_PROXY_URL: ${RELAYDOCK_QUERY_PROXY_URL:-}

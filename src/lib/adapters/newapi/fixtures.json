@@ -1,0 +1,135 @@
+{
+  "provider": "newapi",
+  "synthetic": true,
+  "request": {
+    "account": {
+      "managementUrl": "https://relay.example/proxy/api/user/self",
+      "userId": "123",
+      "query": {
+        "timeoutSeconds": 20
+      }
+    },
+    "expected": {
+      "url": "https://relay.example/proxy/api/user/self",
+      "timeoutSeconds": 20,
+      "authHeader": "Authorization",
+      "userId": "123"
+    }
+  },
+  "cases": [
+    {
+      "name": "raw zero is not unknown",
+      "body": {
+        "success": true,
+        "data": {
+          "quota": 0
+        }
+      },
+      "expected": {
+        "balance": "0",
+        "unit": "配额",
+        "rawQuota": "0"
+      }
+    },
+    {
+      "name": "confirmed conversion",
+      "account": {
+        "quotaPerUnit": "500000",
+        "unit": "CNY"
+      },
+      "body": {
+        "success": true,
+        "data": {
+          "quota": "750000"
+        }
+      },
+      "expected": {
+        "balance": "1.5",
+        "unit": "CNY",
+        "rawQuota": "750000"
+      }
+    },
+    {
+      "name": "large exact string quota",
+      "body": {
+        "success": true,
+        "data": {
+          "quota": "999999999999999999999999"
+        }
+      },
+      "expected": {
+        "balance": "999999999999999999999999",
+        "unit": "配额",
+        "rawQuota": "999999999999999999999999"
+      }
+    },
+    {
+      "name": "business rejection",
+      "body": {
+        "success": false,
+        "data": {
+          "quota": 1
+        }
+      },
+      "error": "provider_rejected"
+    },
+    {
+      "name": "missing quota",
+      "body": {
+        "success": true,
+        "data": {}
+      },
+      "error": "invalid_balance"
+    },
+    {
+      "name": "fractional quota",
+      "body": {
+        "success": true,
+        "data": {
+          "quota": "1.5"
+        }
+      },
+      "error": "invalid_balance"
+    },
+    {
+      "name": "unsafe numeric quota",
+      "body": {
+        "success": true,
+        "data": {
+          "quota": 9007199254740992
+        }
+      },
+      "error": "invalid_balance"
+    },
+    {
+      "name": "converted amount over 24 integer digits",
+      "account": {
+        "quotaPerUnit": "0.000000000001"
+      },
+      "body": {
+        "success": true,
+        "data": {
+          "quota": "1000000000000"
+        }
+      },
+      "error": "invalid_balance"
+    },
+    {
+      "name": "converted amount at supported 24-digit boundary",
+      "account": {
+        "quotaPerUnit": "0.000000000001"
+      },
+      "body": {
+        "success": true,
+        "data": {
+          "quota": "999999999999"
+        }
+      },
+      "expected": {
+        "balance": "999999999999000000000000",
+        "unit": "USD",
+        "rawQuota": "999999999999"
+      }
+    }
+  ]
+}

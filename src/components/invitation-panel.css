@@ -1,0 +1,15 @@
+.invitation-panel{display:grid;gap:18px;min-width:0;color:var(--ink)}
+.invitation-panel section,.invitation-editor{min-width:0;border-top:1px solid var(--border);padding-top:16px}
+.invitation-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.invitation-heading h3{display:flex;align-items:center;gap:8px;font-size:15px;margin:0}
+.invitation-heading>span{font-size:12px;color:var(--muted)}
+.invitation-help{font-size:12px;line-height:1.7;color:var(--muted);margin:8px 0;overflow-wrap:anywhere}
+.invitation-url{display:block;font-family:var(--font-mono,monospace);font-size:14px;line-height:1.6;overflow-wrap:anywhere;border:1px solid var(--border);background:var(--surface);padding:12px;margin:12px 0}
+.invitation-code{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:14px}
+.invitation-code output{font-family:var(--font-mono,monospace);font-size:24px;font-weight:700;overflow-wrap:anywhere;min-width:0}
+.invitation-secondary-url{overflow-wrap:anywhere}
+.invitation-editor{display:grid;gap:8px}.invitation-editor label{display:grid;gap:8px;font-size:13px;font-weight:600}
+.invitation-editor input{width:100%;min-width:0;box-sizing:border-box}.invitation-editor>.button{justify-self:start;margin-top:6px}
+.invitation-error,.invitation-notice{margin:0;padding:10px 12px;font-size:13px;line-height:1.6;border:1px solid var(--border);overflow-wrap:anywhere}
+.invitation-error{color:var(--danger);border-color:var(--danger)}
+@media(max-width:480px){.invitation-heading{align-items:flex-start}.invitation-heading>.button{width:100%;justify-content:center}.invitation-url{font-size:12px}}

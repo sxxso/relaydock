@@ -1,0 +1,53 @@
+{
+  "provider": "openrouter",
+  "synthetic": true,
+  "request": {
+    "account": {
+      "apiUrl": "https://openrouter.ai/api/v1",
+      "query": { "timeoutSeconds": 30 }
+    },
+    "expected": {
+      "url": "https://openrouter.ai/api/v1/credits",
+      "timeoutSeconds": 30,
+      "authHeader": "Authorization",
+      "userId": ""
+    }
+  },
+  "cases": [
+    {
+      "name": "exact zero",
+      "body": { "data": { "total_credits": "0.3", "total_usage": "0.3" } },
+      "expected": { "balance": "0", "unit": "USD", "rawQuota": null }
+    },
+    {
+      "name": "decimal subtract fixed USD",
+      "account": { "unit": "CNY" },
+      "body": { "data": { "total_credits": 0.3, "total_usage": 0.1 } },
+      "expected": { "balance": "0.2", "unit": "USD", "rawQuota": null }
+    },
+    {
+      "name": "business rejection",
+      "body": {
+        "error": { "code": 403, "message": "synthetic management key required" }
+      },
+      "error": "provider_rejected"
+    },
+    {
+      "name": "negative result",
+      "body": { "data": { "total_credits": "1", "total_usage": "2" } },
+      "error": "invalid_balance"
+    },
+    {
+      "name": "missing usage",
+      "body": { "data": { "total_credits": "1" } },
+      "error": "invalid_balance"
+    },
+    {
+      "name": "unsafe numeric",
+      "body": {
+        "data": { "total_credits": 9007199254740992, "total_usage": 0 }
+      },
+      "error": "invalid_balance"
+    }
+  ]
+}

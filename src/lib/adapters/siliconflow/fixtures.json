@@ -1,0 +1,41 @@
+{
+  "provider": "siliconflow",
+  "synthetic": true,
+  "request": {
+    "account": {},
+    "expected": {
+      "url": "https://api.siliconflow.cn/v1/user/info",
+      "timeoutSeconds": 10,
+      "authHeader": "Authorization",
+      "userId": ""
+    }
+  },
+  "cases": [
+    {
+      "name": "legacy zero",
+      "body": { "status": true, "data": { "totalBalance": "0" } },
+      "expected": { "balance": "0", "unit": "CNY", "rawQuota": null }
+    },
+    {
+      "name": "legacy contract only",
+      "body": { "status": true, "data": { "totalBalance": "12.5" } },
+      "expected": { "balance": "12.5", "unit": "CNY", "rawQuota": null }
+    },
+    {
+      "name": "business rejection",
+      "body": { "status": false },
+      "error": "provider_rejected"
+    },
+    { "name": "missing", "body": { "data": {} }, "error": "invalid_balance" },
+    {
+      "name": "unsafe numeric",
+      "body": { "data": { "totalBalance": 9007199254740992 } },
+      "error": "invalid_balance"
+    },
+    {
+      "name": "invalid text",
+      "body": { "data": { "totalBalance": "NaN" } },
+      "error": "invalid_balance"
+    }
+  ]
+}

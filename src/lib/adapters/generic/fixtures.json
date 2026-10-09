@@ -1,0 +1,50 @@
+{
+  "provider": "generic",
+  "synthetic": true,
+  "request": {
+    "account": {
+      "apiUrl": "https://relay.example/proxy/user/balance",
+      "unit": "CNY"
+    },
+    "expected": {
+      "url": "https://relay.example/proxy/user/balance",
+      "timeoutSeconds": 10,
+      "authHeader": "Authorization",
+      "userId": ""
+    }
+  },
+  "cases": [
+    {
+      "name": "zero",
+      "account": { "unit": "CNY" },
+      "body": { "balance": 0 },
+      "expected": { "balance": "0", "unit": "CNY", "rawQuota": null }
+    },
+    {
+      "name": "exact decimal string",
+      "body": { "balance": "123.123456789012" },
+      "expected": {
+        "balance": "123.123456789012",
+        "unit": "USD",
+        "rawQuota": null
+      }
+    },
+    {
+      "name": "business rejection",
+      "body": { "status": false, "balance": 4 },
+      "error": "provider_rejected"
+    },
+    { "name": "missing", "body": {}, "error": "invalid_balance" },
+    { "name": "null", "body": { "balance": null }, "error": "invalid_balance" },
+    {
+      "name": "unsafe numeric",
+      "body": { "balance": 9007199254740992 },
+      "error": "invalid_balance"
+    },
+    {
+      "name": "negative",
+      "body": { "balance": "-1" },
+      "error": "invalid_balance"
+    }
+  ]
+}

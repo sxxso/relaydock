@@ -1,0 +1,95 @@
+.map-pattern-lines {
+  color: color-mix(in srgb, var(--ink) 20%, transparent);
+}
+[data-background="contours"] .map-pattern-lines,
+[data-background="sea"] .map-pattern-lines {
+  color: color-mix(in srgb, var(--ink) 11%, transparent);
+}
+.map-pattern-plane {
+  pointer-events: none;
+}
+.atlas-map {
+  --map-corner-width: 148px;
+  --map-corner-inset: 17px;
+  --map-corner-height: 40px;
+  --map-corner-gap: 8px;
+}
+.map-style-control {
+  position: absolute;
+  top: var(--map-corner-inset);
+  right: var(--map-corner-inset);
+  width: var(--map-corner-width);
+  z-index: 3;
+}
+.map-style-control .atlas-select-trigger {
+  width: 100%;
+  min-height: var(--map-corner-height);
+  padding: 7px 10px;
+  gap: 7px;
+  font-size: 12px;
+  border: 2px solid var(--ink);
+  border-radius: 2px;
+  background: var(--surface);
+  box-shadow: 3px 3px 0 var(--bauhaus-ink-shadow);
+}
+/* A stable frame: feedback changes its ink, not its position inside a wrapper. */
+.map-style-control .atlas-select-trigger:hover:not([data-disabled]),
+.map-style-control .atlas-select-trigger:active:not([data-disabled]) {
+  transform: none;
+}
+.map-style-control .atlas-select-trigger-icon {
+  color: var(--bauhaus-blue);
+}
+.map-node .node-name,
+.map-node .node-balance {
+  paint-order: stroke;
+  stroke: var(--paper);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+.background-setting {
+  display: grid;
+  grid-template-columns: 1fr minmax(150px, 220px);
+  gap: 20px;
+  align-items: center;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--line);
+}
+.background-setting strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+}
+.background-setting small {
+  display: block;
+  font-size: 12px;
+  margin-top: 5px;
+  color: var(--muted);
+}
+.background-setting .atlas-select-trigger {
+  width: 100%;
+}
+.query-mapping {
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+@media (max-width: 600px) {
+  .atlas-map {
+    --map-corner-width: 128px;
+    --map-corner-inset: 12px;
+    --map-corner-height: 38px;
+  }
+  .map-style-control .atlas-select-trigger {
+    padding: 6px 7px;
+    gap: 5px;
+    font-size: 11px;
+  }
+  .background-setting {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+@media (pointer: coarse) {
+  .atlas-map { --map-corner-height: 44px; }
+}

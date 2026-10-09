@@ -1,0 +1,98 @@
+{
+  "provider": "custom",
+  "synthetic": true,
+  "request": {
+    "account": {
+      "managementUrl": "https://relay.example/proxy/v1",
+      "query": {
+        "path": "/wallet",
+        "authHeader": "x-api-key",
+        "timeoutSeconds": 20
+      }
+    },
+    "expected": {
+      "url": "https://relay.example/proxy/v1/wallet",
+      "timeoutSeconds": 20,
+      "authHeader": "x-api-key",
+      "userId": ""
+    }
+  },
+  "cases": [
+    {
+      "name": "usage nullish zero response unit",
+      "account": {
+        "query": { "extractionMode": "usage", "path": "/v1/usage" },
+        "unit": "USD"
+      },
+      "body": {
+        "remaining": null,
+        "quota": { "remaining": "0", "unit": "CNY" },
+        "balance": "99",
+        "is_active": true
+      },
+      "expected": { "balance": "0", "unit": "CNY", "rawQuota": null }
+    },
+    {
+      "name": "usage missing unit fallback",
+      "account": { "query": { "extractionMode": "usage" }, "unit": "CNY" },
+      "body": { "balance": "1.25" },
+      "expected": { "balance": "1.25", "unit": "USD", "rawQuota": null }
+    },
+    {
+      "name": "usage inactive rejected",
+      "account": { "query": { "extractionMode": "usage" } },
+      "body": { "remaining": "2", "is_active": false },
+      "error": "provider_rejected"
+    },
+    {
+      "name": "default zero",
+      "body": { "balance": 0 },
+      "expected": { "balance": "0", "unit": "USD", "rawQuota": null }
+    },
+    {
+      "name": "array fields subtract divide",
+      "account": {
+        "query": {
+          "balancePath": "data.wallets.0.amount",
+          "subtractPath": "data.wallets.0.used",
+          "divisor": "100"
+        },
+        "unit": "积分"
+      },
+      "body": { "data": { "wallets": [{ "amount": "900", "used": "200" }] } },
+      "expected": { "balance": "7", "unit": "积分", "rawQuota": null }
+    },
+    {
+      "name": "precise rounded quotient",
+      "account": { "query": { "divisor": "3" } },
+      "body": { "balance": "1" },
+      "expected": {
+        "balance": "0.333333333333",
+        "unit": "USD",
+        "rawQuota": null
+      }
+    },
+    {
+      "name": "business rejection",
+      "body": { "isValid": false, "balance": 1 },
+      "error": "provider_rejected"
+    },
+    {
+      "name": "missing field",
+      "account": { "query": { "balancePath": "data.amount" } },
+      "body": { "data": {} },
+      "error": "invalid_balance"
+    },
+    {
+      "name": "negative result",
+      "account": { "query": { "subtractPath": "used" } },
+      "body": { "balance": "1", "used": "2" },
+      "error": "invalid_balance"
+    },
+    {
+      "name": "unsafe numeric",
+      "body": { "balance": 9007199254740992 },
+      "error": "invalid_balance"
+    }
+  ]
+}

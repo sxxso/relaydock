@@ -1,0 +1,38 @@
+name: Bug / 故障报告
+description: 提供可复现步骤与脱敏诊断，不提交真实凭据
+title: "[Bug]: "
+body:
+  - type: markdown
+    attributes:
+      value: 请先阅读 README 和 docs/DIAGNOSTICS.md。不要上传环境文件、数据库、主密钥、凭据、Cookie、完整 URL 参数或真实响应正文。
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: 隐私检查
+      options:
+        - label: 我确认内容及附件不含真实凭据或个人数据，诊断仅来自应用的白名单复制报告。
+          required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: 环境与版本
+      description: 应用版本/提交、系统、Node 或 Docker 版本、浏览器。不要粘贴 .env。
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤
+      description: 写清点击过程、预期结果和实际结果，尽量用合成账号复现。
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostic
+    attributes:
+      label: 可选脱敏诊断
+      description: 只使用「查询诊断 → 复制报告」生成的白名单内容；不要粘贴请求头、响应正文或凭据。
+  - type: textarea
+    id: evidence
+    attributes:
+      label: 可选脱敏截图
+      description: 遮盖账号名、站点、余额及个人信息；最好使用合成演示数据。

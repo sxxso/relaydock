@@ -1,0 +1,721 @@
+/* Operation feedback lives here. Only pending loaders repeat; SVG groups stay D3-owned. */
+html[data-theme-transition="running"] *,
+html[data-theme-transition="running"] *::before,
+html[data-theme-transition="running"] *::after {
+  transition: none !important;
+}
+html[data-theme-transition="running"] .theme-toggle-glyph {
+  animation: none;
+}
+html[data-theme-transition="running"]::view-transition-old(root),
+html[data-theme-transition="running"]::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+html[data-theme-transition="running"]::view-transition-group(root) {
+  animation-duration: 520ms;
+}
+html[data-theme-transition="running"]::view-transition-new(root) {
+  z-index: 2;
+}
+html[data-theme-transition="running"]::view-transition-old(root) {
+  z-index: 1;
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.theme-toggle-glyph {
+  animation: turn-paper 320ms var(--ease);
+}
+@keyframes turn-paper {
+  from {
+    opacity: 0;
+    transform: rotate(-45deg) scale(0.72);
+  }
+  65% {
+    opacity: 1;
+    transform: rotate(6deg) scale(1.08);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(0) scale(1);
+  }
+}
+
+/* One finite registration sequence establishes the workspace hierarchy. */
+.app-header,
+.login-page header {
+  animation: header-register 520ms var(--ease) backwards;
+}
+.sites-page > .workspace-heading,
+.sites-page > .workspace-toolbar,
+.sites-page > .workspace-body,
+.page-content {
+  animation: panel-register 480ms var(--ease) backwards;
+}
+.sites-page > .workspace-heading {
+  animation-delay: 70ms;
+}
+.sites-page > .workspace-toolbar {
+  animation-delay: 140ms;
+}
+.sites-page > .workspace-body {
+  animation-delay: 210ms;
+}
+@keyframes header-register {
+  from {
+    opacity: 0;
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(0);
+  }
+}
+@keyframes panel-register {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* The sliding ink register and opposing reveal directions make a view change legible. */
+.view-switch::before {
+  transition: transform 240ms var(--motion-snap);
+}
+.view-switch[data-view="list"]::before {
+  transform: translateX(calc(100% + 2px));
+}
+.view-switch button {
+  transition:
+    color 160ms var(--ease),
+    transform 160ms var(--motion-snap);
+}
+.view-switch button:active:not(:disabled) {
+  transform: scale(0.92);
+}
+.atlas-map {
+  animation: reveal-map 420ms var(--ease);
+}
+.site-list {
+  animation: reveal-list 360ms var(--ease);
+}
+@keyframes reveal-map {
+  from {
+    opacity: 0.55;
+    clip-path: inset(0 100% 0 0);
+  }
+  70% {
+    opacity: 1;
+    clip-path: inset(0 3% 0 0);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(0);
+  }
+}
+@keyframes reveal-list {
+  from {
+    opacity: 0.55;
+    clip-path: inset(0 0 100% 0);
+  }
+  70% {
+    opacity: 1;
+    clip-path: inset(0 0 3% 0);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(0);
+  }
+}
+
+.app-header nav button::after {
+  transition: transform 200ms var(--ease);
+}
+.button,
+.icon-button,
+.query-route-switch button,
+.map-controls button,
+.map-group-index summary,
+.map-group-index button,
+.map-match-control button,
+.map-move-launcher,
+.map-move-panel button,
+.filter-menu summary,
+.atlas-select-trigger {
+  transition:
+    transform 180ms var(--motion-snap),
+    color 160ms var(--ease),
+    background-color 160ms var(--ease),
+    border-color 160ms var(--ease),
+    box-shadow 180ms var(--ease);
+}
+@media (hover: hover) and (pointer: fine) {
+  .button:hover:not(:disabled),
+  .atlas-select-trigger:hover:not([data-disabled]) {
+    transform: translate(-2px, -2px);
+  }
+  .icon-button:hover:not(:disabled),
+  .map-controls button:hover:not(:disabled),
+  .filter-menu summary:hover {
+    transform: translateY(-1px);
+  }
+  .site-row:hover {
+    transform: translateX(4px);
+  }
+}
+.button:active:not(:disabled),
+.atlas-select-trigger:active:not([data-disabled]) {
+  transform: translate(1px, 2px) scale(0.99);
+}
+.icon-button:active:not(:disabled),
+.query-route-switch button:active:not(:disabled),
+.map-controls button:active:not(:disabled),
+.map-group-index summary:active,
+.map-group-index button:active:not(:disabled),
+.map-match-control button:active:not(:disabled),
+.map-move-launcher:active:not(:disabled),
+.map-move-panel button:active:not(:disabled),
+.filter-menu summary:active {
+  transform: translateY(1px) scale(0.94);
+}
+.site-row {
+  transition:
+    transform 220ms var(--motion-snap),
+    background-color 180ms var(--ease),
+    box-shadow 180ms var(--ease),
+    border-color 180ms var(--ease);
+}
+.field input,
+.field select,
+.field textarea {
+  transition: border-color 160ms var(--ease);
+}
+.switch-row input {
+  transition: background-color 180ms var(--ease);
+}
+.switch-row input::before {
+  transition: transform 180ms var(--motion-snap);
+}
+
+.icon-button.selected > svg {
+  transform-origin: center;
+  animation: mark-favorite 380ms var(--ease);
+}
+@keyframes mark-favorite {
+  from {
+    transform: rotate(-16deg) scale(0.55);
+  }
+  55% {
+    transform: rotate(8deg) scale(1.22);
+  }
+  80% {
+    transform: rotate(-3deg) scale(0.96);
+  }
+  to {
+    transform: rotate(0) scale(1);
+  }
+}
+
+/* Panels settle just beyond their final position, then return to the paper. */
+.map-group-index[open] .map-group-items,
+.map-move-panel {
+  transform-origin: right top;
+  animation: unfold-paper 280ms var(--ease);
+}
+.filter-menu[open][data-filter-menu-positioned="true"] > div {
+  transform-origin: right top;
+  animation: filter-menu-unfold 180ms var(--ease);
+}
+.filter-menu[data-filter-menu-side="top"] > div {
+  transform-origin: right bottom;
+}
+/* Grow within the clamped bounds, rather than overshooting the viewport edge. */
+@keyframes filter-menu-unfold {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes unfold-paper {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.97);
+  }
+  68% {
+    opacity: 1;
+    transform: translateY(2px) scale(1.008);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.modal-overlay[data-state="open"] {
+  animation: open-overlay 180ms var(--ease);
+}
+.modal-content[data-state="open"] {
+  animation: open-paper 340ms var(--ease);
+}
+.modal-content[data-state="closed"] {
+  animation: close-paper 140ms ease-in;
+  pointer-events: none;
+}
+.modal-overlay[data-state="closed"] {
+  animation: close-overlay 140ms ease-in;
+}
+@keyframes open-overlay {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes close-overlay {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+@keyframes open-paper {
+  from {
+    opacity: 0;
+    transform: translate(-50%, calc(-50% + 12px)) scale(0.96);
+  }
+  68% {
+    opacity: 1;
+    transform: translate(-50%, calc(-50% - 2px)) scale(1.012);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+@keyframes close-paper {
+  to {
+    opacity: 0;
+    transform: translate(-50%, calc(-50% + 6px)) scale(0.98);
+  }
+}
+.account-detail[data-state="open"] {
+  transform-origin: right top;
+  animation: open-detail 320ms var(--ease);
+}
+.account-detail[data-state="closing"] {
+  animation: close-detail 180ms ease-in forwards;
+  pointer-events: none;
+}
+@keyframes open-detail {
+  from {
+    opacity: 0;
+    transform: translateX(10px) scale(0.99);
+  }
+  68% {
+    opacity: 1;
+    transform: translateX(-2px) scale(1.006);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+@keyframes close-detail {
+  to {
+    opacity: 0;
+    transform: translateX(8px);
+  }
+}
+.detail-balance strong {
+  border-radius: 4px;
+  animation: balance-recorded 550ms var(--ease);
+}
+@keyframes balance-recorded {
+  from {
+    background-color: var(--accent-soft);
+  }
+  to {
+    background-color: transparent;
+  }
+}
+
+/* Never animate a map-node, ink-island, world or drag-handle group's transform. */
+.map-node > .node-core,
+.map-node > .node-halo {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition:
+    transform 240ms var(--motion-snap),
+    stroke 180ms var(--ease),
+    stroke-width 180ms var(--ease),
+    opacity 180ms var(--ease);
+}
+.atlas-map:not([data-dragging="true"]):not([data-group-dragging]) .map-node.is-selected:not([data-drag-source="true"]):not(.map-drag-ghost) > .node-core {
+  --node-feedback-scale: 1.035;
+  transform: scale(var(--node-feedback-scale));
+  animation: selected-core 420ms var(--ease);
+}
+.atlas-map:not([data-dragging="true"]):not([data-group-dragging]) .map-node.is-selected:not([data-drag-source="true"]):not(.map-drag-ghost) > .node-halo {
+  --node-feedback-scale: 1.04;
+  transform: scale(var(--node-feedback-scale));
+  animation: selected-halo 520ms var(--ease);
+}
+@media (hover: hover) and (pointer: fine) {
+  .atlas-map:not([data-dragging="true"]):not([data-group-dragging]) .map-node:not([data-drag-source="true"]):not(.map-drag-ghost):hover > .node-core {
+    --node-feedback-scale: 1.08;
+    transform: scale(var(--node-feedback-scale));
+  }
+  .atlas-map:not([data-dragging="true"]):not([data-group-dragging]) .map-node:not([data-drag-source="true"]):not(.map-drag-ghost):hover > .node-halo {
+    --node-feedback-scale: 1.06;
+    transform: scale(var(--node-feedback-scale));
+  }
+}
+@keyframes selected-core {
+  from {
+    transform: scale(0.9);
+  }
+  60% {
+    transform: scale(1.12);
+  }
+  82% {
+    transform: scale(0.99);
+  }
+  to {
+    transform: scale(var(--node-feedback-scale, 1));
+  }
+}
+@keyframes selected-halo {
+  from {
+    opacity: 0.45;
+    transform: scale(0.9);
+  }
+  62% {
+    opacity: 1;
+    transform: scale(1.12);
+  }
+  to {
+    opacity: 1;
+    transform: scale(var(--node-feedback-scale, 1));
+  }
+}
+.ink-island > .island-wash {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: island-wash-in 520ms var(--ease) var(--island-delay, 0ms) backwards;
+}
+@keyframes island-wash-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
+  }
+  70% {
+    opacity: 0.88;
+    transform: translateY(-1px) scale(1.008);
+  }
+  to {
+    opacity: 0.88;
+    transform: translateY(0) scale(1);
+  }
+}
+/* Drag feedback wins over selection/hover, on children only. */
+.atlas-map[data-dragging="true"] .node-core,
+.atlas-map[data-dragging="true"] .node-halo,
+.atlas-map[data-group-dragging] .node-core,
+.atlas-map[data-group-dragging] .node-halo,
+.ink-island[data-group-moving="true"] > .island-wash,
+.map-node[data-drag-source="true"] > .node-core,
+.map-node[data-drag-source="true"] > .node-halo,
+.map-drag-ghost .node-core,
+.map-drag-ghost .node-halo {
+  animation: none !important;
+  transition: none !important;
+  transform: none !important;
+}
+
+/* Fixed toasts keep their centering; the inline mobile variant has no translation. */
+.toast {
+  animation: toast-register 340ms var(--ease);
+}
+.toast-stack > .toast { animation-name: toast-inline-register; }
+@keyframes toast-register {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 12px) scale(0.97);
+  }
+  70% {
+    opacity: 1;
+    transform: translate(-50%, -2px) scale(1.008);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+}
+@media (max-width: 760px) {
+  .view-switch[data-view="list"]::before {
+    transform: translateX(100%);
+  }
+  .account-detail[data-state="open"] {
+    animation-name: open-sheet;
+    transform-origin: center bottom;
+  }
+  .account-detail[data-state="closing"] {
+    animation-name: close-sheet;
+  }
+  .toast.with-detail {
+    animation-name: toast-inline-register;
+  }
+}
+@keyframes open-sheet {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.985);
+  }
+  68% {
+    opacity: 1;
+    transform: translateY(-3px) scale(1.004);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@keyframes close-sheet {
+  to {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+@keyframes toast-inline-register {
+  from {
+    opacity: 0;
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(0);
+  }
+}
+
+/* The loading composition is the sole decorative loop, scoped to its real status. */
+.workspace-loading .loading-square-main {
+  animation: loader-register 2800ms var(--ease) infinite;
+}
+.workspace-loading .loading-square-accent {
+  animation: loader-accent 2800ms var(--ease) infinite;
+}
+.workspace-loading .loading-square-warm {
+  animation: loader-warm 2800ms var(--ease) infinite;
+}
+.workspace-loading .loading-rule {
+  transform-origin: left center;
+  animation: loader-rule 1600ms var(--ease) -180ms infinite;
+}
+@keyframes loader-register {
+  0%, 100% {
+    transform: rotate(0deg) scale(1);
+    border-radius: 0;
+  }
+  25% {
+    transform: rotate(45deg) scale(0.84);
+    border-radius: 0;
+  }
+  50% {
+    transform: rotate(90deg) scale(0.86);
+    border-radius: 50%;
+  }
+  75%, 86% {
+    transform: rotate(0deg) translate(4px, 3px) scale(0.66, 0.78);
+    border-radius: 38% 46% 36% 44%;
+  }
+}
+@keyframes loader-accent {
+  0%, 100% {
+    transform: translate(42px, -35px) scale(0.1);
+    opacity: 0;
+    border-radius: 0;
+  }
+  25%, 50% {
+    transform: translate(42px, -35px) scale(0.15);
+    opacity: 0;
+    border-radius: 50%;
+  }
+  75%, 86% {
+    transform: translate(-4px, 5px) rotate(-18deg) scale(1);
+    opacity: 1;
+    border-radius: 42%;
+  }
+}
+@keyframes loader-warm {
+  0%, 100% {
+    transform: translate(-50px, 42px) scale(0.1);
+    opacity: 0;
+    border-radius: 0;
+  }
+  25%, 50% {
+    transform: translate(-50px, 42px) scale(0.15);
+    opacity: 0;
+    border-radius: 50%;
+  }
+  75%, 86% {
+    transform: translate(4px, 6px) rotate(12deg) scale(1);
+    opacity: 1;
+    border-radius: 38%;
+  }
+}
+@keyframes loader-rule {
+  0%, 100% {
+    transform: scaleX(0.3);
+    opacity: 0.4;
+  }
+  50% {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+
+/* Keep the existing login composition as one finite entrance. */
+.login-intro,
+.login-form {
+  animation: login-paper-in 600ms var(--ease) 110ms backwards;
+}
+.login-form {
+  animation-delay: 220ms;
+}
+.login-page::before {
+  animation: login-mark-in 700ms var(--ease) 160ms backwards;
+}
+.login-page::after {
+  animation: login-block-in 640ms var(--ease) 260ms backwards;
+}
+.ink-stroke {
+  transform-origin: left center;
+  animation: ink-stroke-in 420ms var(--ease) 340ms backwards;
+}
+.login-illustration {
+  animation: login-paper-in 700ms var(--ease) 300ms backwards;
+}
+.login-illustration circle {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: orbit-mark-in 600ms var(--ease) backwards;
+}
+.login-illustration circle:nth-of-type(2) {
+  animation-delay: 120ms;
+}
+.login-illustration circle:nth-of-type(3) {
+  animation-delay: 240ms;
+}
+@keyframes login-paper-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes login-mark-in {
+  from {
+    opacity: 0;
+    transform: translate(14px, -8px) scale(0.9);
+  }
+  to {
+    opacity: 0.16;
+    transform: translate(0, 0) scale(1);
+  }
+}
+@keyframes login-block-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) rotate(35deg) scale(0.85);
+  }
+  to {
+    opacity: 0.5;
+    transform: translateY(0) rotate(15deg) scale(1);
+  }
+}
+@keyframes ink-stroke-in {
+  from {
+    transform: rotate(-5deg) scaleX(0);
+  }
+  to {
+    transform: rotate(-5deg) scaleX(1);
+  }
+}
+@keyframes orbit-mark-in {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* One global off policy includes portals, new CSS modules, pseudo-elements and spinners. */
+html[data-motion="false"],
+html[data-motion="false"] *,
+html[data-motion="false"]::before,
+html[data-motion="false"]::after,
+html[data-motion="false"] *::before,
+html[data-motion="false"] *::after,
+.atlas-map.no-motion,
+.atlas-map.no-motion *,
+.atlas-map.no-motion::before,
+.atlas-map.no-motion::after,
+.atlas-map.no-motion *::before,
+.atlas-map.no-motion *::after {
+  animation: none !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
+}
+html[data-motion="false"] .ink-canvas,
+.atlas-map.no-motion .ink-canvas {
+  display: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+  .ink-canvas {
+    display: none;
+  }
+}
+/* Keep optional browser pseudos out of the universal selector list. */
+@supports (view-transition-name: root) {
+  html[data-motion="false"]::view-transition-group(*),
+  html[data-motion="false"]::view-transition-image-pair(*),
+  html[data-motion="false"]::view-transition-old(*),
+  html[data-motion="false"]::view-transition-new(*) {
+    animation: none !important;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    ::view-transition-group(*),
+    ::view-transition-image-pair(*),
+    ::view-transition-old(*),
+    ::view-transition-new(*) {
+      animation: none !important;
+    }
+  }
+}

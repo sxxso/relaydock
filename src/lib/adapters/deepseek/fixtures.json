@@ -1,0 +1,69 @@
+{
+  "provider": "deepseek",
+  "synthetic": true,
+  "request": {
+    "account": {},
+    "expected": {
+      "url": "https://api.deepseek.com/user/balance",
+      "timeoutSeconds": 10,
+      "authHeader": "Authorization",
+      "userId": ""
+    }
+  },
+  "cases": [
+    {
+      "name": "unavailable can have real zero",
+      "account": { "unit": "CNY" },
+      "body": {
+        "is_available": false,
+        "balance_infos": [
+          { "currency": "CNY", "total_balance": "0" },
+          { "currency": "USD", "total_balance": "7.10" }
+        ]
+      },
+      "expected": { "balance": "0", "unit": "CNY", "rawQuota": null }
+    },
+    {
+      "name": "select USD no exchange",
+      "body": {
+        "balance_infos": [
+          { "currency": "CNY", "total_balance": "8" },
+          { "currency": "USD", "total_balance": "7.10" }
+        ]
+      },
+      "expected": { "balance": "7.1", "unit": "USD", "rawQuota": null }
+    },
+    {
+      "name": "business rejection",
+      "body": { "error": { "message": "synthetic rejection" } },
+      "error": "provider_rejected"
+    },
+    {
+      "name": "currency missing",
+      "body": {
+        "balance_infos": [{ "currency": "CNY", "total_balance": "8" }]
+      },
+      "error": "invalid_balance"
+    },
+    {
+      "name": "duplicate currency",
+      "body": {
+        "balance_infos": [
+          { "currency": "USD", "total_balance": "1" },
+          { "currency": "USD", "total_balance": "2" }
+        ]
+      },
+      "error": "invalid_balance"
+    },
+    {
+      "name": "invalid structure",
+      "body": { "balance_infos": {} },
+      "error": "invalid_balance"
+    },
+    {
+      "name": "missing amount",
+      "body": { "balance_infos": [{ "currency": "USD" }] },
+      "error": "invalid_balance"
+    }
+  ]
+}

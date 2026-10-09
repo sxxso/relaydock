@@ -1,0 +1,104 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: relaydock
+
+env:
+  NEXT_TELEMETRY_DISABLED: "1"
+
+jobs:
+  core:
+    name: Core checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      RELAYDOCK_MAP_GESTURES: "1"
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          path: relaydock
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: "22.20.0"
+          cache: npm
+          cache-dependency-path: relaydock/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - run: npm run release:prepare -- --check
+      - run: npx --no-install playwright install --with-deps chromium
+      - run: npm test
+      - run: npm run typecheck -- --incremental false
+      - run: npm run build
+
+  browser:
+    name: Browser regression (${{ matrix.group }})
+    needs: core
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        group: [interface, query, management]
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          path: relaydock
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: "22.20.0"
+          cache: npm
+          cache-dependency-path: relaydock/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - run: npx --no-install playwright install --with-deps chromium
+      - run: npm run build
+      - run: npm run ci:browser -- ${{ matrix.group }}
+      - name: Keep synthetic screenshots and acceptance summaries
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: browser-${{ matrix.group }}
+          retention-days: 7
+          if-no-files-found: ignore
+          path: |
+            relaydock/output/playwright/**/*.png
+            relaydock/output/playwright/**/*.json
+            /tmp/relaydock-query-focus-report-*/*.png
+            /tmp/relaydock-query-focus-report-*/verification.json
+
+  docker:
+    name: Docker persistence and migration
+    needs: core
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          path: relaydock
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: "22.20.0"
+      - run: npm run test:docker -- --ready
+      - name: Keep Docker acceptance summary (no credentials or raw logs)
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: docker-acceptance
+          retention-days: 7
+          if-no-files-found: ignore
+          path: relaydock/output/docker/verification.json

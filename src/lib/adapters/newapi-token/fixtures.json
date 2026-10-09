@@ -1,0 +1,132 @@
+{
+  "provider": "newapi-token",
+  "synthetic": true,
+  "request": {
+    "account": {
+      "apiUrl": "https://relay.example/proxy/v1",
+      "userId": "123"
+    },
+    "expected": {
+      "url": "https://relay.example/proxy/api/usage/token",
+      "timeoutSeconds": 10,
+      "authHeader": "Authorization",
+      "userId": ""
+    }
+  },
+  "cases": [
+    {
+      "name": "limited token zero",
+      "body": {
+        "code": true,
+        "data": {
+          "total_available": "0",
+          "unlimited_quota": false
+        }
+      },
+      "expected": {
+        "balance": "0",
+        "unit": "令牌配额",
+        "rawQuota": "0"
+      }
+    },
+    {
+      "name": "token not account money",
+      "account": {
+        "quotaPerUnit": "500000"
+      },
+      "body": {
+        "success": true,
+        "data": {
+          "total_available": 250000,
+          "unlimited_quota": false
+        }
+      },
+      "expected": {
+        "balance": "0.5",
+        "unit": "令牌额度 (USD)",
+        "rawQuota": "250000"
+      }
+    },
+    {
+      "name": "business rejection",
+      "body": {
+        "success": false
+      },
+      "error": "provider_rejected"
+    },
+    {
+      "name": "unlimited is not zero",
+      "body": {
+        "code": true,
+        "data": {
+          "total_available": 0,
+          "unlimited_quota": true
+        }
+      },
+      "error": "invalid_balance"
+    },
+    {
+      "name": "missing unlimited flag",
+      "body": {
+        "code": true,
+        "data": {
+          "total_available": 1
+        }
+      },
+      "error": "invalid_balance"
+    },
+    {
+      "name": "not a token contract",
+      "body": {
+        "data": {
+          "total_available": 1,
+          "unlimited_quota": false
+        }
+      },
+      "error": "invalid_balance"
+    },
+    {
+      "name": "unsafe token quota",
+      "body": {
+        "code": true,
+        "data": {
+          "total_available": 9007199254740992,
+          "unlimited_quota": false
+        }
+      },
+      "error": "invalid_balance"
+    },
+    {
+      "name": "converted amount over 24 integer digits",
+      "account": {
+        "quotaPerUnit": "0.000000000001"
+      },
+      "body": {
+        "code": true,
+        "data": {
+          "total_available": "1000000000000",
+          "unlimited_quota": false
+        }
+      },
+      "error": "invalid_balance"
+    },
+    {
+      "name": "converted amount at supported 24-digit boundary",
+      "account": {
+        "quotaPerUnit": "0.000000000001"
+      },
+      "body": {
+        "code": true,
+        "data": {
+          "total_available": "999999999999",
+          "unlimited_quota": false
+        }
+      },
+      "expected": {
+        "balance": "999999999999000000000000",
+        "unit": "令牌额度 (USD)",
+        "rawQuota": "999999999999"
+      }
+    }
+  ]
+}

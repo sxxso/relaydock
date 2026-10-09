@@ -1,0 +1,93 @@
+.modal-content:has(.checkin-panel), .modal-content:has(.checkin-batch-panel) { width: min(940px, calc(100vw - 32px)); }
+.checkin-panel, .checkin-batch-panel { min-width: 0; font-size: 13px; line-height: 1.6; }
+.checkin-account-name { color: var(--muted); font-size: 11px; margin: 0 0 12px; overflow-wrap: anywhere; }
+.checkin-controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; }
+.checkin-month-label { display: grid; gap: 4px; margin-right: auto; }
+.checkin-month-label > span { color: var(--muted); font-size: 12px; }
+.checkin-month-label input { min-height: 39px; border: 1px solid var(--line); padding: 6px 11px; background: var(--surface); color: var(--ink); border-radius: 5px; }
+.checkin-refresh-option { display: flex; align-items: center; gap: 8px; width: fit-content; margin-top: 14px; cursor: pointer; }
+.checkin-refresh-option input { width: 16px; height: 16px; accent-color: var(--bauhaus-blue); }
+.checkin-help { font-size: 12px; color: var(--muted); margin: 9px 0 16px; overflow-wrap: anywhere; }
+.checkin-empty { padding: 30px 15px; text-align: center; color: var(--muted); }
+.checkin-status { display: flex; justify-content: space-between; gap: 18px; padding: 16px 18px; margin: 20px 0 16px; border-left: 4px solid var(--bauhaus-blue); background: color-mix(in srgb, var(--bauhaus-blue-soft) 52%, var(--surface)); }
+.checkin-status strong { color: var(--bauhaus-blue); font-size: 17px; font-weight: 600; }
+.checkin-status p { margin: 4px 0 0; max-width: 45em; }
+.checkin-status dl { flex-shrink: 0; max-width: 250px; font-size: 11px; margin: 0; }
+.checkin-status dt { color: var(--muted); }
+.checkin-status dd { margin: 1px 0 6px; overflow-wrap: anywhere; }
+.checkin-status.uncertain { border-color: var(--accent); background: var(--accent-soft); }
+.checkin-status.uncertain strong { color: var(--danger); }
+.checkin-error, .checkin-feedback { padding: 13px 16px; margin: 14px 0; background: var(--accent-soft); border-left: 3px solid var(--danger); overflow-wrap: anywhere; }
+.checkin-error { color: var(--danger); display: flex; gap: 8px; align-items: start; }
+.checkin-error svg { flex-shrink: 0; margin-top: 3px; }
+.checkin-error p, .checkin-feedback p { margin: 3px 0 0; }
+.checkin-feedback strong { font-weight: 600; }
+.checkin-feedback.positive { background: color-mix(in srgb, var(--bauhaus-blue-soft) 52%, var(--surface)); border-color: var(--bauhaus-blue); }
+.checkin-feedback.positive > strong { color: var(--bauhaus-blue); }
+.checkin-balance-error { color: var(--danger); }
+.checkin-site-link { font-size: 12px; margin: 0 0 12px; }
+.checkin-totals { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 24px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); margin: 19px 0; padding: 13px 0; }
+.checkin-totals dt { font-size: 11px; color: var(--muted); }
+.checkin-totals dd { margin: 3px 0 0; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.checkin-old-cache { color: var(--ink-soft); padding: 9px 12px; background: var(--warm-soft); font-size: 12px; margin: 12px 0; }
+.checkin-calendar-title { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 20px 0 10px; }
+.checkin-calendar-title h3, .checkin-operations h3 { margin: 0; font-size: 15px; font-weight: 600; }
+.checkin-calendar-title > span { font-size: 11px; color: var(--muted); display: flex; gap: 6px; align-items: center; }
+.checkin-calendar-title i { width: 9px; height: 9px; background: var(--bauhaus-blue); display: inline-block; }
+.checkin-weekdays, .checkin-calendar-week { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 5px; }
+.checkin-weekdays { color: var(--muted); font-size: 11px; margin-bottom: 6px; text-align: center; }
+.checkin-calendar-week + .checkin-calendar-week { margin-top: 5px; }
+.checkin-day { min-width: 0; min-height: 72px; padding: 8px 10px; border: 1px solid var(--line); background: var(--surface); font-variant-numeric: tabular-nums; }
+.checkin-day.empty { border-color: transparent; background: transparent; }
+.checkin-day-heading { display: flex; justify-content: space-between; align-items: center; gap: 3px; line-height: 1.3; }
+.checkin-day-number { display: block; }
+.checkin-day.stamped { background: var(--bauhaus-blue); color: var(--on-blue); border-color: var(--bauhaus-blue); }
+.checkin-day.stamped svg { flex-shrink: 0; }
+.checkin-day-quota { display: block; font-size: 11px; margin-top: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.checkin-records { margin: 14px 0 0; padding: 0; list-style: none; }
+.checkin-records li { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; border-bottom: 1px solid var(--line); font-size: 12px; font-variant-numeric: tabular-nums; }
+.checkin-records span { text-align: right; overflow-wrap: anywhere; }
+.checkin-operations { margin-top: 23px; padding-top: 16px; border-top: 1px solid var(--border); }
+.checkin-operations ul { list-style: none; margin: 8px 0 0; padding: 0; max-height: 320px; overflow-y: auto; }
+.checkin-operations li { padding: 12px 0; border-bottom: 1px solid var(--line); }
+.checkin-operations li > div { display: flex; justify-content: space-between; gap: 10px; }
+.checkin-operations strong { font-size: 12px; font-weight: 600; }
+.checkin-operations time { font-size: 11px; color: var(--muted); }
+.checkin-operations p { margin: 3px 0 0; font-size: 12px; color: var(--ink-soft); }
+.checkin-batch-scope { display: flex; align-items: baseline; justify-content: space-between; gap: 15px; padding-bottom: 13px; border-bottom: 2px solid var(--bauhaus-blue); }
+.checkin-batch-scope strong { color: var(--bauhaus-blue); font-weight: 600; font-size: 16px; }
+.checkin-batch-summary { display: flex; gap: 10px 18px; flex-wrap: wrap; margin: 14px 0; }
+.checkin-batch-summary span { color: var(--ink-soft); font-size: 12px; }
+.checkin-batch-list { list-style: none; padding: 0; margin: 14px 0; max-height: min(52vh, 500px); overflow-y: auto; }
+.checkin-batch-list > li { padding: 14px 2px; border-bottom: 1px solid var(--line); overflow-wrap: anywhere; }
+.checkin-batch-account { display: flex; gap: 12px; justify-content: space-between; align-items: baseline; }
+.checkin-batch-account strong { font-weight: 600; }
+.checkin-batch-account span { color: var(--muted); font-size: 12px; }
+.checkin-batch-list .checkin-feedback { margin: 8px 0 0; padding: 9px 12px; }
+.checkin-batch-list > li > p { color: var(--muted); margin: 4px 0 0; font-size: 12px; }
+.checkin-batch-actions { display: flex; justify-content: end; gap: 12px; margin-top: 15px; }
+.checkin-panel button:focus-visible, .checkin-panel input:focus-visible, .checkin-batch-panel button:focus-visible, .checkin-batch-panel input:focus-visible { outline: 2px solid var(--bauhaus-blue); outline-offset: 3px; }
+@media (max-width: 680px) {
+  .modal-content:has(.checkin-panel), .modal-content:has(.checkin-batch-panel) { padding: 19px 16px; }
+  .checkin-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .checkin-month-label { grid-column: 1 / -1; margin: 0; }
+  .checkin-controls .button { padding: 8px 7px; font-size: 12px; gap: 5px; }
+  .checkin-status { display: block; padding: 13px; }
+  .checkin-status dl { margin-top: 10px; max-width: none; display: flex; flex-wrap: wrap; gap: 8px 20px; }
+  .checkin-totals { gap: 10px 14px; }
+  .checkin-totals dd { font-size: 12px; }
+  .checkin-weekdays, .checkin-calendar-week { gap: 3px; }
+  .checkin-calendar-week + .checkin-calendar-week { margin-top: 3px; }
+  .checkin-day { min-height: 58px; padding: 6px 4px; font-size: 12px; }
+  .checkin-day.stamped svg { width: 10px; height: 10px; }
+  .checkin-day-quota { font-size: 9px; margin-top: 11px; }
+  .checkin-calendar-title > span { font-size: 10px; }
+  .checkin-records li { align-items: start; }
+  .checkin-records time { flex-shrink: 0; }
+  .checkin-operations li > div { flex-wrap: wrap; gap: 3px 10px; }
+  .checkin-batch-scope { display: block; }
+  .checkin-batch-scope > span { display: block; margin-top: 5px; }
+  .checkin-batch-account { align-items: start; flex-direction: column; gap: 1px; }
+  .checkin-batch-actions { display: grid; grid-template-columns: 1fr 1fr; }
+}
+@media (prefers-reduced-motion: reduce) { .checkin-panel .spin, .checkin-batch-panel .spin { animation: none; } }

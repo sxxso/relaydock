@@ -1,0 +1,45 @@
+name: Platform / 平台适配
+description: 提供官方合同或合成反例，不把模板支持当成实站保证
+title: "[Platform]: "
+body:
+  - type: markdown
+    attributes:
+      value: 请先阅读 CONTRIBUTING.md 和 docs/ADAPTERS.md。夹具验证、文档核对、实站验证分别记录；不执行用户脚本，不提交真实凭据。
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: 隐私与验证范围
+      options:
+        - label: 我确认不提交真实凭据、Cookie、用户 ID、私人站点地址或原始请求响应。
+          required: true
+        - label: 我理解合成夹具通过不等于所有真实部署查询成功，实站状态必须有授权实测证据。
+          required: true
+  - type: input
+    id: platform
+    attributes:
+      label: 平台及公开版本
+      description: 不知道版本就写未知，不按域名猜测。
+    validations:
+      required: true
+  - type: dropdown
+    id: evidence
+    attributes:
+      label: 证据类型
+      options:
+        - 合成夹具 / 响应合同
+        - 官方公开文档
+        - 经授权的实站验证（仅提供脱敏结论）
+    validations:
+      required: true
+  - type: textarea
+    id: contract
+    attributes:
+      label: 端点、认证类型与金额口径
+      description: 公开文档链接、账户余额或令牌额度、字段类型、币种及换算。只描述认证类型，不填真实凭据。
+    validations:
+      required: true
+  - type: textarea
+    id: fixture
+    attributes:
+      label: 合成成功 / 失败反例
+      description: 人工构造最小 JSON，包含零、缺字段等边界；不要从真实响应直接复制。

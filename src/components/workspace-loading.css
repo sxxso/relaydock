@@ -1,0 +1,201 @@
+/* The loading shell follows the workspace, without inventing account data. */
+.workspace-loading {
+  min-height: 100dvh;
+  padding: 0 24px 28px;
+  margin: auto;
+  background: var(--paper);
+  color: var(--ink);
+}
+.workspace-loading .loading-header {
+  min-height: 78px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+  border-bottom: 3px solid var(--ink);
+}
+.workspace-loading .loading-workbench {
+  padding-top: 22px;
+}
+.workspace-loading .skeleton {
+  display: block;
+  min-width: 0;
+  border-radius: 2px;
+  background: var(--chip);
+}
+.workspace-loading .skeleton-nav {
+  width: min(28vw, 310px);
+  height: 30px;
+}
+.workspace-loading .loading-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 20px;
+  padding-left: 16px;
+  border-left: 8px solid var(--accent);
+}
+.workspace-loading .skeleton-title {
+  width: min(190px, 42%);
+  height: 38px;
+}
+.workspace-loading .skeleton-summary {
+  width: clamp(140px, 22vw, 280px);
+  height: 66px;
+  border: 2px solid var(--ink);
+  box-shadow: 5px 5px 0 var(--warm);
+}
+.workspace-loading .loading-toolbar {
+  display: grid;
+  grid-template-columns: minmax(180px, 420px) repeat(2, minmax(64px, 112px));
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  margin-bottom: 18px;
+  border: 2px solid var(--ink);
+  background: var(--surface);
+  box-shadow: 3px 3px 0 var(--bauhaus-ink-shadow);
+}
+.workspace-loading .skeleton-search {
+  height: 42px;
+  border: 2px solid var(--ink);
+}
+.workspace-loading .skeleton-filter {
+  height: 40px;
+  border: 2px solid var(--ink-soft);
+}
+.workspace-loading .loading-map {
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: max(550px, calc(100dvh - 325px));
+  min-height: 550px;
+  max-height: 900px;
+  overflow: hidden;
+  border: 2px solid var(--ink);
+  border-radius: 2px;
+  background: var(--surface);
+  box-shadow: 6px 6px 0 rgba(23, 37, 61, 0.14);
+}
+.workspace-loading .loading-land {
+  position: absolute;
+  width: 30%;
+  height: 38%;
+  border-radius: 2px;
+  pointer-events: none;
+}
+.workspace-loading .loading-land-a {
+  top: 16%;
+  left: 7%;
+  background: color-mix(in srgb, var(--island-a) 55%, var(--surface));
+}
+.workspace-loading .loading-land-b {
+  right: 7%;
+  bottom: 16%;
+  background: color-mix(in srgb, var(--island-d) 55%, var(--surface));
+}
+.workspace-loading .loading-composition {
+  position: relative;
+  width: 150px;
+  height: 140px;
+}
+.workspace-loading .loading-square,
+.workspace-loading .loading-rule {
+  position: absolute;
+  display: block;
+}
+.workspace-loading .loading-square-main {
+  width: 94px;
+  height: 94px;
+  left: 28px;
+  top: 20px;
+  border: 7px solid var(--ink-visual-color, var(--ink));
+  transform-origin: center;
+  border-radius: 38% 46% 36% 44%;
+}
+.workspace-loading .loading-square-accent {
+  width: 35px;
+  height: 35px;
+  left: 7px;
+  top: 76px;
+  background: var(--ink-visual-color, var(--accent));
+  border-radius: 42%;
+}
+.workspace-loading .loading-square-warm {
+  width: 25px;
+  height: 25px;
+  right: 4px;
+  top: 8px;
+  background: var(--ink-visual-color, var(--warm));
+  border-radius: 38%;
+}
+.workspace-loading .loading-rule {
+  width: 120px;
+  height: 5px;
+  left: 15px;
+  bottom: 0;
+  background: var(--bauhaus-blue);
+}
+.workspace-loading .loading-caption {
+  margin-top: 16px;
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-weight: 650;
+}
+@media (min-width: 1800px) {
+  .workspace-loading .loading-map {
+    max-height: 950px;
+  }
+}
+@media (max-width: 760px) {
+  .workspace-loading {
+    padding-inline: 18px;
+  }
+  .workspace-loading .loading-header {
+    min-height: 124px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 13px;
+    padding: 19px 0 12px;
+  }
+  .workspace-loading .skeleton-nav {
+    width: min(230px, 70%);
+    height: 26px;
+    margin-inline: auto;
+  }
+  .workspace-loading .loading-workbench {
+    padding-top: 26px;
+  }
+  .workspace-loading .loading-heading {
+    gap: 10px;
+  }
+  .workspace-loading .skeleton-title {
+    height: 34px;
+  }
+  .workspace-loading .skeleton-summary {
+    width: 120px;
+    height: 56px;
+  }
+  .workspace-loading .loading-toolbar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    padding: 10px;
+    margin-bottom: 20px;
+  }
+  .workspace-loading .skeleton-search {
+    grid-column: 1 / -1;
+  }
+  .workspace-loading .skeleton-filter {
+    height: 44px;
+  }
+  .workspace-loading .loading-map {
+    height: calc(100dvh - 310px);
+    min-height: 480px;
+    max-height: 750px;
+  }
+  .workspace-loading .loading-land {
+    width: 36%;
+    height: 30%;
+  }
+}

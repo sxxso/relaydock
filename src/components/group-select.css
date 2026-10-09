@@ -1,0 +1,20 @@
+.group-select > label {
+  color: var(--ink-soft);
+  font-size: 12px;
+}
+.group-name-entry {
+  display: grid;
+  gap: 6px;
+  padding: 10px;
+  border-left: 2px solid var(--accent);
+  background: var(--chip);
+  border-radius: 3px 6px 6px 3px;
+}
+.group-name-entry label {
+  color: var(--muted);
+  font-size: 11px;
+}
+.group-name-entry input {
+  width: 100%;
+  min-width: 0;
+}

@@ -1,0 +1,55 @@
+.island-drag-handle {
+  outline: none;
+  touch-action: none;
+}
+.island-drag-handle.is-movable {
+  cursor: grab;
+}
+.island-drag-handle > rect {
+  fill: transparent;
+  stroke: transparent;
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+  transition:
+    fill 160ms var(--ease),
+    stroke 160ms var(--ease);
+}
+.island-drag-handle .group-grip {
+  color: var(--muted);
+  opacity: 0.6;
+  pointer-events: none;
+}
+.island-drag-handle .island-title {
+  pointer-events: none;
+}
+.island-drag-handle:hover > rect {
+  fill: var(--chip);
+  stroke: var(--line);
+}
+.island-drag-handle:focus-visible > rect {
+  fill: var(--chip);
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+.island-drag-handle[aria-disabled="true"] .group-grip {
+  opacity: 0.25;
+}
+.ink-island[data-group-moving="true"] .island-drag-handle {
+  cursor: grabbing;
+}
+.ink-island[data-group-moving="true"] .island-drag-handle > rect {
+  fill: var(--chip);
+  stroke: var(--accent);
+}
+.atlas-map[data-group-dragging] .map-node {
+  cursor: grabbing;
+}
+.atlas-map.no-motion .island-drag-handle > rect,
+html[data-motion="false"] .island-drag-handle > rect {
+  transition: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .island-drag-handle > rect {
+    transition: none;
+  }
+}

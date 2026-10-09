@@ -1,0 +1,98 @@
+.query-tools {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+.query-tools .view-switch {
+  margin-left: 0;
+}
+.query-route-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  background: var(--chip);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  min-height: 40px;
+  flex-shrink: 0;
+}
+.query-route-label {
+  color: var(--muted);
+  font-size: 11px;
+  padding: 0 7px 0 9px;
+  min-width: 43px;
+}
+.query-route-switch button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border: 1px solid transparent;
+  border-radius: 20px;
+  min-height: 32px;
+  padding: 5px 10px;
+  color: var(--muted);
+  font-size: 12px;
+  white-space: nowrap;
+  transition:
+    background 160ms var(--ease),
+    color 160ms var(--ease),
+    border-color 160ms var(--ease),
+    transform 160ms var(--ease);
+}
+.query-route-switch button[aria-pressed="true"] {
+  background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 25%, transparent);
+  color: var(--ink);
+}
+.query-route-switch button:not(:disabled):hover {
+  background: var(--surface);
+  color: var(--ink);
+  border-color: var(--line);
+}
+.query-route-switch button:not(:disabled):active {
+  transform: translateY(1px);
+}
+.query-route-switch button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+.query-route-switch button:disabled[aria-pressed="true"] {
+  opacity: 0.7;
+}
+.query-route-help {
+  font-size: 12px;
+  line-height: 1.8;
+  color: var(--muted);
+  margin: 12px 0 0;
+}
+.query-route-warning {
+  color: var(--warm);
+}
+.query-route-help code {
+  word-break: break-all;
+}
+@media (max-width: 760px) {
+  .query-tools {
+    flex-basis: 100%;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .query-route-switch {
+    min-height: 38px;
+  }
+  .query-tools .refresh-button {
+    min-height: 38px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .query-route-switch button {
+    transition: none;
+  }
+}
+[data-motion="false"] .query-route-switch button {
+  transition: none;
+}

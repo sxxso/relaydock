@@ -1,0 +1,14 @@
+services:
+  atlas:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3000:3000"
+    environment:
+      RELAYDOCK_ADMIN_PASSWORD: ${RELAYDOCK_ADMIN_PASSWORD:?Set a strong initial password in .env}
+      RELAYDOCK_PUBLIC_URL: ${RELAYDOCK_PUBLIC_URL:-http://127.0.0.1:3000}
+      RELAYDOCK_PRIVATE_HOSTS: ${RELAYDOCK_PRIVATE_HOSTS:-}
+    volumes:
+      - atlas-data:/app/data
+volumes:
+  atlas-data:

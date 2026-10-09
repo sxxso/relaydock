@@ -1,0 +1,216 @@
+.batch-toolbar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 0 0 16px;
+}
+.batch-toolbar .batch-enter {
+  min-height: 34px;
+  padding: 6px 10px;
+  font-size: 11px;
+}
+.batch-hint,
+.batch-scope {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.65;
+}
+.batch-toolbar.is-open {
+  padding: 10px 12px;
+  margin-bottom: 16px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  border-radius: 5px;
+  background: var(--surface);
+  gap: 10px;
+}
+.batch-count {
+  color: var(--accent);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.batch-actions {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex-wrap: wrap;
+}
+.batch-actions > button {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 34px;
+  padding: 6px 9px;
+  border-radius: 4px;
+  font-size: 11px;
+  color: var(--ink-soft);
+  transition:
+    background 150ms var(--ease),
+    color 150ms var(--ease);
+}
+.batch-actions > button:hover:not(:disabled) {
+  background: var(--chip);
+  color: var(--accent);
+}
+.batch-actions > button:disabled {
+  opacity: 0.5;
+}
+.batch-scope {
+  flex-basis: 100%;
+}
+.batch-checkbox {
+  position: relative;
+  width: 30px;
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.batch-checkbox input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  margin: 0;
+}
+.batch-checkbox > span {
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  width: 17px;
+  height: 17px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--surface);
+  color: transparent;
+}
+.batch-checkbox input:checked + span,
+.batch-checkbox input:indeterminate + span {
+  background: var(--accent);
+  color: var(--paper);
+  border-color: var(--accent);
+}
+.batch-checkbox input:focus-visible + span {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.batch-checkbox input:disabled + span {
+  opacity: 0.35;
+}
+.batch-checkbox > span i {
+  height: 2px;
+  width: 8px;
+  background: currentColor;
+}
+.site-list.is-batch .site-row,
+.site-list.is-batch .list-header {
+  grid-template-columns:
+    30px minmax(130px, 1.5fr) minmax(50px, 0.6fr) minmax(130px, 1fr)
+    103px 25px;
+  gap: 12px;
+}
+.site-list.is-batch .list-header > span {
+  text-align: left;
+}
+.site-list.is-batch .list-header > .list-balance-head {
+  text-align: right;
+}
+.batch-form {
+  padding-top: 16px;
+}
+.batch-targets {
+  margin-bottom: 20px;
+  padding: 10px 12px;
+  background: var(--chip);
+  border-radius: 4px;
+  font-size: 12px;
+}
+.batch-targets strong {
+  font-weight: 500;
+  color: var(--ink-soft);
+}
+.batch-targets p {
+  margin: 5px 0 0;
+  color: var(--muted);
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+}
+.batch-form .field {
+  margin-bottom: 16px;
+}
+.batch-form .atlas-select-trigger {
+  width: 100%;
+}
+.batch-warning {
+  border-left: 2px solid var(--warm);
+  padding: 9px 12px;
+  background: var(--chip);
+  color: var(--ink-soft);
+  font-size: 12px;
+  line-height: 1.8;
+  margin: 14px 0 24px;
+}
+@media (max-width: 1100px) {
+  .site-list.is-batch .site-row,
+  .site-list.is-batch .list-header {
+    grid-template-columns: 30px minmax(110px, 1.4fr) minmax(105px, 1fr) 25px;
+    gap: 8px;
+  }
+  .site-list.is-batch .list-header > .list-identity-head {
+    display: block;
+  }
+  .site-list.is-batch .list-header > .list-group-head,
+  .site-list.is-batch .list-header > .list-query-head {
+    display: none;
+  }
+}
+@media (max-width: 760px) {
+  .batch-toolbar {
+    gap: 7px;
+    padding-bottom: 12px;
+  }
+  .batch-hint {
+    font-size: 10px;
+  }
+  .batch-toolbar.is-open {
+    gap: 7px;
+    padding: 9px;
+  }
+  .batch-actions {
+    flex-basis: 100%;
+  }
+  .batch-actions > button {
+    min-height: 36px;
+    padding: 5px 7px;
+  }
+  .site-list.is-batch .site-row,
+  .site-list.is-batch .list-header {
+    grid-template-columns: 26px minmax(86px, 1fr) minmax(110px, 1fr) 20px;
+    gap: 6px;
+    padding-left: 3px;
+    padding-right: 3px;
+  }
+  .site-list.is-batch .site-avatar {
+    display: none;
+  }
+  .site-list.is-batch .site-identity {
+    gap: 6px;
+  }
+  .batch-checkbox {
+    width: 26px;
+    min-height: 40px;
+  }
+}
+html[data-motion="false"] .batch-actions > button {
+  transition: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .batch-actions > button {
+    transition: none;
+  }
+}
