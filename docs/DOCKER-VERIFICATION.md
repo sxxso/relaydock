@@ -1,6 +1,6 @@
 # Docker 验收
 
-**当前状态（2026-10-05）：本机没有 Docker CLI / 可用 daemon，尚未容器实测。** Dockerfile、Compose、自动验收脚本或安全边界单测不等于镜像已验证；GitHub CI 任务也只有实际成功运行后才算证据。
+**当前状态（2026-10-09）：Ubuntu GitHub CI 的 Docker 完整验收已通过。** [实际运行报告](https://github.com/sxxso/relaydock/actions/runs/37937021254/job/113842730486) 对应提交 `4e981d2`、Docker 28.0.4：七个检查全部 PASS、三个主动夹具余额请求、清理错误为零。验证范围为临时合成部署；Compose 人工启动及 doctor 容器内执行仍待验证。本机仍没有 Docker CLI / 可用 daemon。
 
 ## 执行条件
 
@@ -16,7 +16,7 @@ npm run test:docker -- --ready
 ## 验收范围
 
 1. 白名单复制 src/public、应用 LICENSE 与明确的构建文件；不读取或复制 .env.local、data、数据库、主密钥、node_modules、现有 .next 或源文件链接。
-2. 构建新镜像，创建随机命名且带运行标签的专属容器/卷/内部网络。应用和余额夹具只连接内部网络；单独的只读、无额外 capabilities 的 TCP 转发容器连接内部网络与本次入口网络，只映射 127.0.0.1 随机端口。内部网络本身不发布主机端口，参见 [Docker 上游记录](https://github.com/moby/moby/issues/36174)。应用保持非 root，运行阶段显式复制 LICENSE 至 /app/LICENSE（此配置仍待容器实测）。
+2. 构建新镜像，创建随机命名且带运行标签的专属容器/卷/内部网络。应用和余额夹具只连接内部网络；单独的只读、无额外 capabilities 的 TCP 转发容器连接内部网络与本次入口网络，只映射 127.0.0.1 随机端口。内部网络本身不发布主机端口，参见 [Docker 上游记录](https://github.com/moby/moby/issues/36174)。应用保持非 root，运行阶段显式复制 LICENSE 至 /app/LICENSE；依赖许可及二进制分发要求另见发布清单。
 3. 用随机合成密码登录，新增合成账号；登录与保存均不发余额请求。
 4. 仅主动 sync 请求查询本次内部网络中的合成 HTTP 服务，没有真实平台、真实凭据、自动轮询或出站余额查询。
 5. 重启原容器后读取原余额，再次主动查询，验证持久化凭据和主密钥仍可使用。
@@ -32,10 +32,10 @@ npm run test:docker -- --ready
 - `BLOCKED` / 直接 Node 退出码 2（npm 包装仍返回非零）：Docker CLI 或 daemon 不可用，不创建验收资源。
 - `FAIL`、`CANCELED` / 非零：某阶段或清理失败，`dockerVerified=false`。不将已有成功检查当成整体通过。
 
-CI 自动执行同一 --ready 命令。只有取得实际运行的完整 PASS 报告后，才更新本文与发布检查清单。现有 Compose 的人工启动还应依 README 验证；本脚本不接管已有 Compose 项目。
+CI 自动执行同一 --ready 命令，本文的通过状态来自上述实际完整 PASS 报告。现有 Compose 的人工启动还应依 README 验证；本脚本不接管已有 Compose 项目。
 
-本轮已执行 --ready 预检，报告明确 BLOCKED，没有启动容器。端口重读、精确资源缺失分类及其他安全边界已有单测，并补入许可证复制与运行阶段声明回归；这些不是 Docker 实测证据。
+此前本机 --ready 预检返回 BLOCKED，没有启动容器。首次 CI 暴露内部网络不发布主机端口的验收配置问题；通过独立 loopback 转发容器修复后，真实 Docker 持久化、迁移与备份验收通过。端口重读、精确资源缺失分类及其他安全边界单测继续保留。
 
 ## 本地部署自检入口
 
-第二阶段新增 doctor，可在镜像中执行 node scripts/doctor.mjs --json，或停止服务后通过 Compose 临时容器检查同一数据卷。脚本不会初始化或修复数据，非空 WAL 保留 WARN。详见 [本地部署自检](DOCTOR.md)。运行阶段文件与白名单已经接入，但 doctor 在容器内执行也尚未实测，不改变本文的 Docker 未验证状态。
+第二阶段新增 doctor，可在镜像中执行 node scripts/doctor.mjs --json，或停止服务后通过 Compose 临时容器检查同一数据卷。脚本不会初始化或修复数据，非空 WAL 保留 WARN。详见 [本地部署自检](DOCTOR.md)。运行阶段文件与白名单已经接入，但 doctor 在容器内执行尚未实测；它不在本次 Docker 七项验收范围内。

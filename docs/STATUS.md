@@ -2,6 +2,12 @@
 
 更新日期：2026-10-09。独立源码发布目标为 `sxxso/relaydock`；本地验收与 GitHub CI 的范围分别记录。
 
+## GitHub CI 与容器实测（2026-10-09）
+
+- 独立公开仓库已创建并推送，Git 提交使用 GitHub noreply 身份；最新提交是否全部通过，以 [Actions 实际结果](https://github.com/sxxso/relaydock/actions/workflows/ci.yml) 为准。下方各阶段为历史验收记录。
+- Ubuntu CI 的 Docker 完整验收已实际 PASS：新镜像、非 root 登录与无自动查询、主动夹具查询、重启持久化、数据库与主密钥迁移、数据备份及专属资源清理；七个检查全部通过、三个主动请求、清理错误为零。完整证据见 [Docker 验收](DOCKER-VERIFICATION.md)。Compose 人工启动、doctor 容器入口与最终分发许可仍待完成。
+- 初次 CI 暴露查询聚焦脚本的 Windows 限制与内部网络端口发布问题。Linux 端口所有者检查保留 PID 与启动时间比较；Docker 应用和余额夹具保持内部网络，新增独立 loopback TCP 转发器。模型测试并行处理点击和响应等待，保留默认点击条件及失败截图；没有强制点击、跳过套件或提高超时。
+
 ## 独立开源准备与本轮验收（2026-10-09）
 
 - 已创建独立公开仓库 `sxxso/relaydock`，GitHub 私密漏洞报告入口已启用。保留 MIT 与 `cjmarklll` 署名；[开源流程](OPEN-SOURCE.md)、[安全报告说明](../SECURITY.md)、[首次公开说明草稿](RELEASE-DRAFT.md) 已补齐。公开提交以新的独立历史开始，不带本机配置或上级仓库历史。

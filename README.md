@@ -4,7 +4,7 @@
 
 ## 发布状态与界面
 
-独立源码仓库：[sxxso/relaydock](https://github.com/sxxso/relaydock)。尚未发布稳定版本。**采用 MIT 许可证，版权署名 cjmarklll；Docker 本地未实测；七个平台均为夹具验证、实站未验证。** 支持模板不是查询成功保证，仍需在自己的部署中主动测试连接；远端 CI 的实际结果请查看仓库 Actions。
+独立源码仓库：[sxxso/relaydock](https://github.com/sxxso/relaydock)。尚未发布稳定版本。**采用 MIT 许可证，版权署名 cjmarklll；Docker 已通过 Ubuntu CI 合成部署验收；七个平台均为夹具验证、实站未验证。** 支持模板不是查询成功保证，仍需在自己的部署中主动测试连接；远端 CI 的实际结果请查看仓库 Actions。
 
 ![实际运行的浅色地图（合成账号）](docs/images/atlas-current-light.png)
 
@@ -95,7 +95,7 @@ docker compose up -d --build
 
 默认只将端口映射到本机，本机入口为 `http://127.0.0.1:3000`；用 HTTPS 反向代理对外提供服务。持久化卷 `atlas-data` 同时保存数据库与自动生成的主密钥。镜像以非 root 用户运行。
 
-本开发环境没有 Docker；Dockerfile/Compose 与自动验收脚本已提供，但不得把它视为已完成容器实测。具备 Docker 环境后运行 `npm run test:docker -- --ready`；范围、结果与清理约束见 [Docker 验收](docs/DOCKER-VERIFICATION.md)。
+Ubuntu CI 已实际通过 Docker 镜像、非 root 登录、主动查询、重启持久化、数据库与主密钥迁移、备份及资源清理验收。Compose 人工启动仍待验证。具备 Docker 环境后可运行 `npm run test:docker -- --ready`；实际报告、范围与清理约束见 [Docker 验收](docs/DOCKER-VERIFICATION.md)。
 
 ## 备份与迁移
 
@@ -137,7 +137,7 @@ npm run test:model-insight -- --ready
 npm run test:checkin -- --ready
 ```
 
-CI 对独立应用仓库的 push（main/master）、Pull Request 和手动运行生效，开启 `RELAYDOCK_MAP_GESTURES=1`，执行默认跳过的五项地图手势测试。十五套浏览器回归按界面/查询/管理分组，失败即停。查询聚焦、模型表现、签到和邀请验收必须传 `--ready`，否则只显示待执行而不构建。GitHub 首次真实运行与 Docker 实测仍是发布门槛，不能用本地静态检查替代。
+CI 对独立应用仓库的 push（main/master）、Pull Request 和手动运行生效，开启 `RELAYDOCK_MAP_GESTURES=1`，执行默认跳过的五项地图手势测试。十五套浏览器回归按界面/查询/管理分组，失败即停。查询聚焦、模型表现、签到和邀请验收必须传 `--ready`，否则只显示待执行而不构建。发布前必须核对[最新提交的全部 CI 任务](https://github.com/sxxso/relaydock/actions/workflows/ci.yml)实际成功，不能用本地静态检查替代。
 
 工作流不使用真实部署 secrets、环境文件或外站账号，只有合成截图和验收摘要作为短期 artifact。运行细节与必需检查见 [贡献指南](CONTRIBUTING.md)。
 
@@ -164,6 +164,6 @@ E2E 脚本会创建隔离的测试数据库、启动自己的本机测试服务�
 
 本项目采用 [MIT License](LICENSE)，版权声明为 `Copyright (c) 2026 cjmarklll`。
 
-源码交付保留此许可证；Docker 运行阶段已配置复制 LICENSE 和 THIRD-PARTY-NOTICES.md，镜像仍待实测。[第三方说明](THIRD-PARTY-NOTICES.md) 保留锁定生产依赖清单与本机包内原文；未安装的平台包、缺失的上游原文及实际镜像仍需核对。采用许可证不代表已创建 GitHub 仓库或完成发布。
+源码交付保留此许可证；Docker 运行阶段复制 LICENSE 和 THIRD-PARTY-NOTICES.md，镜像已通过上述合成部署验收。[第三方说明](THIRD-PARTY-NOTICES.md) 保留锁定生产依赖清单与本机包内原文；未安装的平台包、缺失的上游原文及实际镜像的分发许可仍需核对。源码已公开，稳定版本与容器镜像分发尚未发布。
 
 

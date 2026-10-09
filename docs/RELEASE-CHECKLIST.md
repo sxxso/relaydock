@@ -13,7 +13,8 @@
 - [x] 本轮全新源码副本 62 文件/991 项测试、零跳过、非增量类型检查、webpack 主构建 98I14RTUs4NWhxXeTm8uP 与三组共十五套浏览器全部通过。Windows/共享安装依赖的本地范围、额外专项构建和历史失败记录见当前状态；不代表干净安装、Docker 或 GitHub CI。
 - [ ] 核对 6 个本机包根目录缺失的许可原文、未安装平台包与实际容器中的二进制及内嵌组件；Windows 声明采集不等于 Linux 分发许可核对。
 - [x] `sxxso/relaydock` 公开独立仓库已创建，私密漏洞报告、GitHub secret scanning 与 push protection 已启用；公开源码经过再次隐私复核，新的 Git 历史使用 noreply 身份。
-- [ ] Docker 完整验收及 Compose 实测、首次 GitHub CI 与必要检查设置；稳定版本标签仍待确定。
+- [x] Ubuntu CI Docker 完整验收实际 PASS：七个检查、三个主动夹具请求、清理错误为零；实际报告见 [Docker 验收](DOCKER-VERIFICATION.md)。
+- [ ] Compose 人工实测、必要检查设置与稳定版本标签仍待完成。
 
 ## 第一阶段交付
 
@@ -24,8 +25,8 @@
 - [x] 工作流通过本地 actionlint v1.7.12 校验；新增 YAML 与文档本地链接通过。
 - [x] 许可证补全后 24 项交付回归、全部 713 项测试（0 跳过）和非增量类型检查通过。首轮隔离 webpack 构建 `y8Vw7swW_cLy6JAIl9fvB` 与十二套浏览器回归全部 PASS；本次仅补许可证，没有重跑构建/浏览器。远端正式默认构建尚待首次 CI 运行。
 - [x] **用户已于 2026-10-05 确认 MIT 与 cjmarklll 署名，应用自身 LICENSE 已添加。** 版权声明 `Copyright (c) 2026 cjmarklll`；package/lock 同步许可，Docker 打包保留声明。不复制上级技能库的版权头。
-- [ ] **实际 Docker 验收完整 PASS。当前未实测，本机 Docker 不可用。** 见 [Docker 验收](DOCKER-VERIFICATION.md)。
-- [ ] GitHub 首次 CI 实际运行通过。仅本地配置/验证不等于远端已执行。
+- [x] **实际 Docker 验收完整 PASS（2026-10-09，Ubuntu GitHub CI）。** 本机 Docker 仍不可用；报告见 [Docker 验收](DOCKER-VERIFICATION.md)。
+- GitHub CI 是否完整通过，以[最新提交的全部任务](https://github.com/sxxso/relaydock/actions/workflows/ci.yml)实际结果为准；本地配置或历史成功不能替代最新提交的检查。
 
 ## 第二阶段交付
 
@@ -35,11 +36,11 @@
 - [x] 本轮实际执行 41 文件/784 项合成测试，零跳过；非增量类型、JS 语法、32 份 Markdown/43 处本地链接通过。CLI 断网/副作用阻断与真实 npm 入口均使用合成配置。
 - [x] README 入口、[自检说明](DOCTOR.md)、更新日志与状态台账；明确权限预检、WAL、大数据库及备份/密钥边界。
 - [x] 两项恢复边界 P2 经 RED→GREEN 修复并复审；7 项独立定向验收通过，无新的具体 P1/P2。机器结果记录于 output/stage2-doctor-2026-10-05/verification.json。
-- [ ] doctor 在实际镜像内执行通过；仍与第一阶段 Docker 完整实测一起待完成，源码配置不等于容器验证。
+- [ ] doctor 在实际镜像内执行通过；本次 Docker 七项验收未执行 doctor，源码配置不等于该入口已验证。
 
 ## 仓库边界与发布
 
-- [x] 用户指定 GitHub 账号 sxxso，仓库名 relaydock；当前登录身份已只读核实为 sxxso，目标仓库 API 返回 404。独立公开是准备目标，实际公开/推送未执行；以应用目录为独立根目录，不从上级技能仓库 git add .。
+- [x] 用户指定 GitHub 账号 sxxso，仓库名 relaydock；独立公开仓库已创建并推送，使用 GitHub noreply 身份；以应用目录为独立根目录，不带上级技能仓库历史。
 - [x] 当前源码通过独立白名单导出；RelayDock 尚无父仓库跟踪历史，候选包不带 Git 历史。实际提交/公开前仍需人工审阅候选包与新仓库暂存区。
 - [x] 导出保留 package-lock.json、.env.example、源文件、文档和合成截图；排除 node_modules、.next、output 和本地经验日志。
 - [ ] 在 GitHub 设置必要的 CI required checks：Core checks、三个 Browser regression、Docker persistence and migration；不以手工勾选代替检查结果。
