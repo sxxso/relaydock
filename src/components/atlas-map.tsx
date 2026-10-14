@@ -13,7 +13,6 @@ import {
   ChevronRight,
   LocateFixed,
   FoldVertical,
-  Grip,
   PenLine,
 } from "lucide-react";
 import type { Account } from "@/lib/validation";
@@ -40,6 +39,8 @@ import { displayAmount, isLow } from "@/lib/money";
 import { balanceFreshness } from "@/lib/balance-freshness";
 import "./balance-freshness.css";
 import { InkCanvas } from "./ink-canvas";
+import { MapStory } from "./map-story";
+import { VoyageScene } from "./voyage-scene";
 import { AtlasSelect } from "./atlas-select";
 import {
   backgroundOptions,
@@ -90,6 +91,7 @@ export function AtlasMap({
   density = "standard",
   inkColor,
   inkOpacity,
+  inkStyle,
   onBackgroundChange,
   appearanceBusy = false,
   matchingIds,
@@ -115,6 +117,7 @@ export function AtlasMap({
   density?: PatternDensity;
   inkColor?: string | null;
   inkOpacity?: number;
+  inkStyle?: "wake" | "stardust" | "orbit";
   onBackgroundChange?: (value: MapBackground) => void;
   appearanceBusy?: boolean;
   matchingIds: ReadonlySet<string>;
@@ -338,6 +341,7 @@ export function AtlasMap({
     container.current?.removeAttribute("data-node-dragging");
     container.current?.setAttribute("data-dragging", "false");
     container.current?.removeAttribute("data-drop-group");
+    for (const island of islandElements.current.values()) island.removeAttribute("data-drop-target");
     if (svg.current?.hasPointerCapture(active.pointerId))
       svg.current.releasePointerCapture(active.pointerId);
   }
@@ -531,6 +535,10 @@ export function AtlasMap({
         )
       : null;
     ghost?.setAttribute("data-valid-drop", String(!!target));
+    for (const [name, island] of islandElements.current) {
+      if (name === target?.group) island.setAttribute("data-drop-target", "true");
+      else island.removeAttribute("data-drop-target");
+    }
     for (const el of [
       dropBoundary.current,
       insertionCue.current,
@@ -601,7 +609,14 @@ export function AtlasMap({
     try {
       // Parent must reject on failure and publish the canonical accounts before resolving.
       await onMove(move.id, move.group, move.beforeId);
-      if (mounted.current) setMoveAnnouncement("站点位置已保存");
+      if (mounted.current) {
+        setMoveAnnouncement("站点位置已保存");
+        const ripple = nodeElements.current.get(move.id)?.querySelector(".node-ripple");
+        if (ripple && duration(1)) ripple.animate([
+          { transform: "scale(.8)", opacity: .8 },
+          { transform: "scale(1.7)", opacity: 0 },
+        ], { duration: 700, easing: "ease-out" });
+      }
     } catch {
       // No persistence or error toast here: parent owns both. Clearing the preview rolls back.
       if (mounted.current) setMoveAnnouncement("移动未保存，已恢复原位置");
@@ -703,14 +718,21 @@ export function AtlasMap({
   useEffect(() => {
     let el = container.current;
     if (!el) return;
-    let observer = new ResizeObserver(([entry]) =>
-      setSize({
+    let inView = true;
+    const visibility = () => el.setAttribute("data-ambient-paused", String(!inView || document.hidden));
+    const intersection = new IntersectionObserver(([entry]) => { inView = entry.isIntersecting; visibility(); });
+    intersection.observe(el);
+    document.addEventListener("visibilitychange", visibility);
+    visibility();
+    let observer = new ResizeObserver(([entry]) => {
+      if (entry.contentRect.width <= 0 || entry.contentRect.height <= 0) return;
+      setSize((old) => old.width === entry.contentRect.width && old.height === entry.contentRect.height ? old : ({
         width: entry.contentRect.width,
         height: entry.contentRect.height,
-      }),
-    );
+      }));
+    });
     observer.observe(el);
-    return () => observer.disconnect();
+    return () => { observer.disconnect(); intersection.disconnect(); document.removeEventListener("visibilitychange", visibility); };
   }, []);
   useEffect(() => {
     if (!svg.current || !world.current) return;
@@ -920,7 +942,9 @@ export function AtlasMap({
           window.getSelection()?.removeAllRanges();
       }}
     >
-      <InkCanvas enabled={motion} activityRef={activity} color={inkColor} opacity={inkOpacity} />
+      {background === "sea" && <div className="sea-atmosphere" style={{ opacity: Math.max(0,Math.min(100,backgroundOpacity))/100 }}><VoyageScene kind="sea" /></div>}
+      <InkCanvas enabled={motion} activityRef={activity} color={inkColor} opacity={inkOpacity} variant={inkStyle} />
+      <MapStory host={container} selected={selected} enabled={motion} />
       <svg
         ref={svg}
         role="group"
@@ -1022,7 +1046,8 @@ export function AtlasMap({
         <g ref={world} data-testid="map-world">
           {islands.map((island, i) => {
             const header = islandHeader(island),
-              center = island.x + island.width / 2;
+              center = island.x + island.width / 2,
+              coast = islandPath(island);
             return (
               <g
                 className={"ink-island group-color-" + groupColorIndex(island.name)}
@@ -1032,32 +1057,26 @@ export function AtlasMap({
                   else islandElements.current.delete(island.name);
                 }}
                 data-island-group={island.name}
+                data-collapsed={collapsedGroups.has(island.name)}
+                data-ambient={i < 8}
                 role="group"
                 aria-label={`分组 ${island.name}`}
                 style={
                   {
-                    "--island-delay": `${Math.min(i * 35, 140)}ms`,
+                    "--island-delay": `${Math.min(i * 110, 550)}ms`,
+                    "--tide-delay": `${-(island.seed % 80) / 10}s`,
                     ...groupColorStyle(island.name, groupColors),
                   } as React.CSSProperties
                 }
               >
-                <path
-                  d={islandPath(island)}
-                  className={"island-wash island-" + groupColorIndex(island.name)}
-                  filter={`url(#${filter})`}
-                />
-                <ellipse
-                  cx={island.x + island.width / 2}
-                  cy={island.y + island.height / 2}
-                  rx={island.width * 0.445}
-                  ry={island.height * 0.435}
-                  fill="none"
-                  className={"island-ring island-" + groupColorIndex(island.name)}
-                  strokeWidth="7"
-                  strokeDasharray={`${island.width * 0.65} 32 ${island.width * 0.7} 60`}
-                  transform={`rotate(-9 ${island.x + island.width / 2} ${island.y + island.height / 2})`}
-                  filter={`url(#${filter})`}
-                />
+                <g className="island-terrain" aria-hidden="true" pointerEvents="none">
+                  <path d={coast} className="island-tide tide-outer" />
+                  <path d={coast} className="island-tide tide-inner" />
+                  <path d={coast} className="island-shelf" />
+                  <path d={coast} className="island-wash" />
+                  <path d={coast} className="island-coast" pathLength="1" />
+                  <path d={coast} className="island-contour" />
+                </g>
                 <title>{island.name}</title>
                 <defs>
                   <clipPath id={`island-title-${filter}-${i}`}>
@@ -1103,14 +1122,9 @@ export function AtlasMap({
                     y={header.y - 4}
                     width={header.width + 20}
                     height={header.height + 8}
-                    rx="8"
+                    rx="6"
                   />
-                  <Grip
-                    x={header.x + 2}
-                    y={header.y + 9}
-                    size={18}
-                    className="group-grip"
-                  />
+                  <path className="group-grip" d={`M${header.x + 9} ${header.y + 15}v12m-4-8 4-4 4 4m-8 4 4 4 4-4`} fill="none" stroke="currentColor" strokeWidth="1.5" />
                   <text
                     x={center}
                     y={header.y + 25}
@@ -1238,7 +1252,7 @@ export function AtlasMap({
               </g>
             );
           })}
-          {geometry.nodes.map((node) => {
+          {geometry.nodes.map((node, index) => {
             let a = lookup.get(node.id)!;
             if (!scopeIds.has(a.id) || collapsedGroups.has(node.group))
               return null;
@@ -1260,7 +1274,7 @@ export function AtlasMap({
                 transform={`translate(${node.x},${node.y})`}
                 data-node="true"
                 data-account-id={a.id}
-                style={groupColorStyle(node.group, groupColors)}
+                style={{ ...groupColorStyle(node.group, groupColors), "--node-delay": `${Math.min(index * 45, 450) + 180}ms` } as React.CSSProperties}
                 data-match={matched}
                 role="button"
                 tabIndex={matched || selected === a.id ? 0 : -1}
@@ -1305,6 +1319,8 @@ export function AtlasMap({
                   {a.name} {a.alias} · {freshness.accessibleLabel}
                 </title>
                 <circle r="32" className="node-halo" />
+                <circle r="32" className="node-ripple" aria-hidden="true" pointerEvents="none" />
+                <ellipse cy="29" rx="20" ry="5" className="node-shadow" aria-hidden="true" pointerEvents="none" />
                 <circle r="25" className="node-core" />
                 <text y="7" textAnchor="middle" className="node-initial">
                   {Array.from(a.name)[0]}

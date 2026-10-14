@@ -65,13 +65,14 @@ describe("saved views persistence and API", () => {
 
     const replacedResponse = await call(
       ["views"],
-      { id: created.id, name: "低余额工作账户", filters: { ...filters, onlyLow: true } },
+      { id: created.id, name: "低余额工作账户", filters: { ...filters, onlyLow: true, attention: "failed" } },
       "PUT",
     );
     expect(replacedResponse.status).toBe(200);
     expect((await replacedResponse.json()).id).toBe(created.id);
     expect(store.savedViews()[0].name).toBe("低余额工作账户");
     expect(store.savedViews()[0].filters.onlyLow).toBe(true);
+    expect(store.savedViews()[0].filters.attention).toBe("failed");
 
     const reopened = new Store(join(directory, "fixture.sqlite"), Buffer.alloc(32, 31));
     try {

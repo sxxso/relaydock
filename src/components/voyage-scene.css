@@ -1,0 +1,25 @@
+.voyage-scene { position:absolute;inset:0;overflow:hidden;pointer-events:none; --sea-light:var(--surface);--sea-mid:var(--paper);--sea-deep:color-mix(in srgb,var(--warm) 16%,var(--chip));--sea-foam:var(--surface); }
+.voyage-water { width:100%;height:100%;display:block; }
+.voyage-current { transform-origin:center; }
+.current-back { opacity:.55; }
+.current-front { opacity:.65; }
+.voyage-compass { position:absolute;width:300px;height:166px;left:40%;top:50%;margin-top:-83px;color:var(--ink-soft);opacity:.6; }
+.compass-needle { transform-origin:0 0; }
+.voyage-heading .voyage-water { opacity:.9; }
+.voyage-sea { z-index:0; }
+.voyage-heading { z-index:0; }
+@media(prefers-reduced-motion:no-preference) {
+ html:not([data-motion="false"]) .voyage-current.current-back { animation: sea-drift 17s ease-in-out infinite alternate; }
+ html:not([data-motion="false"]) .voyage-current.current-front { animation: sea-drift 11s ease-in-out -5s infinite alternate-reverse; }
+ html:not([data-motion="false"]) .voyage-glints { animation: sea-shimmer 6s ease-in-out infinite alternate; }
+ html:not([data-motion="false"]) .compass-needle { animation: compass-seek 12s cubic-bezier(.4,0,.2,1) infinite; }
+ html:not([data-motion="false"]) .compass-route { animation: route-flow 14s linear infinite; }
+}
+.voyage-scene[data-paused="true"] *, .atlas-map[data-panning="true"] .voyage-scene * { animation-play-state:paused !important; }
+.atlas-map.no-motion .voyage-scene *, html[data-motion="false"] .voyage-scene * { animation:none!important; }
+@keyframes sea-drift { from { transform:translate(-25px,-12px); } to { transform:translate(36px,18px); } }
+@keyframes sea-shimmer { from { opacity:.25;transform:translateX(-8px); } to { opacity:.9;transform:translateX(14px); } }
+@keyframes compass-seek { 0%,100% { transform:rotate(-24deg); } 30% { transform:rotate(32deg); } 60% { transform:rotate(12deg); } 80% { transform:rotate(-40deg); } }
+@keyframes route-flow { to { stroke-dashoffset:-130; } }
+@media(max-width:1000px) { .voyage-compass { left:30%;opacity:.35; } }
+@media(max-width:600px) { .voyage-compass { left:auto;right:-70px;width:290px;opacity:.24; } }

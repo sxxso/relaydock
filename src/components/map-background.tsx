@@ -111,8 +111,10 @@ export function BackgroundPattern({ kind }: { kind: PatternKind }) {
       {[80, 240, 400].flatMap((x) => [56, 216].map((y) => (
         <path key={`${x}-${y}`} d={`M${x} ${y - 4}v8M${x - 4} ${y}h8`} strokeWidth=".8" opacity=".85" />
       )))}
-      <path d={contourPath(112, 17)} strokeWidth=".8" opacity=".48" />
-      <path d={contourPath(272, 11)} strokeWidth=".7" opacity=".32" />
+      <path d={contourPath(112, 17)} strokeWidth="1.2" opacity=".72" />
+      <path d={contourPath(123, 17)} strokeWidth=".7" opacity=".32" />
+      <path d={contourPath(272, 11)} strokeWidth="1" opacity=".55" />
+      <path d="M160 166h26m-6 -4 6 4-6 4M360 36h-26m6 -4-6 4 6 4" strokeWidth="1.2" opacity=".65" />
     </>}
   </g>;
 }

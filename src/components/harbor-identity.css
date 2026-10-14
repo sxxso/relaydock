@@ -1,0 +1,21 @@
+.dock-brand-mark { display:block;width:42px;height:46px;flex:none; }
+.dock-brand-mark svg { width:100%;height:100%; }
+.dock-brand-type { display:grid;gap:0;line-height:1.05; }
+.brand .dock-brand-type strong { display:flex;align-items:center;font-family:"KaiTi","STKaiti","Kaiti SC",serif;font-size:34px;font-weight:500;letter-spacing:1px;line-height:1; }
+.dock-brand-type strong > span:first-child { display:inline-block;transform:rotate(-7deg) translateY(1px); }
+.dock-brand-type strong > span:nth-child(2) { display:inline-block;transform:rotate(3deg) translateY(-2px); }
+.dock-brand-seal { align-self:end;margin:0 0 3px 4px;padding:2px 1px;border:1px solid var(--accent);border-radius:2px;color:var(--accent);font-size:12px;font-weight:400;font-style:normal;line-height:1;transform:rotate(-8deg); }
+.dock-brand-name { font-family:Georgia,serif;font-style:italic;font-size:12px;letter-spacing:.7px;font-weight:400;margin-top:4px;color:var(--ink-soft); }
+/* Navigation should reveal immediately, without repainting a full-map clip. */
+.app-shell .atlas-map { animation:none; }
+html:not([data-motion="false"]) .app-shell .atlas-map:not(.no-motion) .island-wash,
+html:not([data-motion="false"]) .app-shell .atlas-map:not(.no-motion) .island-coast,
+html:not([data-motion="false"]) .app-shell .atlas-map:not(.no-motion) .map-node > .node-initial,
+html:not([data-motion="false"]) .app-shell .atlas-map:not(.no-motion) .map-node > .node-name { animation:none; }
+.list-cruise-bar { display:flex;justify-content:flex-end;align-items:center;gap:12px;padding:8px 14px;border-bottom:1px solid var(--line); }
+.list-cruise-bar small { font-size:11px;color:var(--muted); }
+.list-cruise-bar button { display:flex;gap:6px;align-items:center;padding:6px 10px;border:1px solid var(--line);border-radius:6px;font-size:12px; }
+.list-cruise-viewport { max-height:350px;overflow:auto;overscroll-behavior:contain;scrollbar-gutter:stable; }
+.list-cruise-viewport .list-header { position:sticky;top:0;z-index:2;background:var(--surface); }
+.site-list.is-batch .list-cruise-viewport { max-height:540px; }
+@media(max-width:760px) { .dock-brand-mark { width:30px;height:34px; } .brand .dock-brand-type strong { font-size:28px; } .dock-brand-name { font-size:10px; } .list-cruise-bar { flex-wrap:wrap; } }

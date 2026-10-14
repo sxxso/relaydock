@@ -66,7 +66,11 @@ npm run test:e2e
 
 ## 自动验收与提交范围
 
-未来独立仓库以应用目录为根，不包含上级技能库或其他作品。`package.json` 保持 `private=true`，避免误发布 npm；应用自身许可证为 MIT，版权声明为 `Copyright (c) 2026 cjmarklll`，不沿用上级仓库版权头。
+独立源码已公开于 [sxxso/relaydock](https://github.com/sxxso/relaydock)。
+
+Dependabot 每周检查 npm 与 GitHub Actions 更新，仅创建 PR，不自动合并。npm 的 minor/patch 更新分组，major 更新单独审阅。所有依赖变更须通过下列完整 CI；生产依赖变化后还需运行 `npm run release:notices`，审阅并补交第三方声明。
+
+独立仓库以应用目录为根，不包含上级技能库或其他作品。`package.json` 保持 `private=true`，避免误发布 npm；应用自身许可证为 MIT，版权声明为 `Copyright (c) 2026 cjmarklll`，不沿用上级仓库版权头。
 
 `.github/workflows/ci.yml` 在 main/master push、PR 和手动触发时执行：
 
@@ -84,7 +88,7 @@ Remove-Item Env:\RELAYDOCK_MAP_GESTURES
 
 Actions 固定官方提交 SHA，默认只读仓库权限，不使用 `pull_request_target` 或真实 secrets，不上传 `.next`、环境文件、数据库、原始服务日志/DOM/trace。验收只访问本地合成服务；安装依赖和容器构建的网络下载不算实站余额验证。
 
-变更须通过 Core checks、三组 Browser regression 和 Docker persistence and migration；仓库创建后由维护者在分支规则中设为 required checks。本地命令通过不等于 GitHub 已执行，单测通过也不等于 Docker 已验证。
+变更须通过 Core checks、三组 Browser regression 和 Docker persistence and migration；维护者应在分支规则中设为 required checks，配置状态见发布清单。本地命令通过不等于 GitHub 已执行，单测通过也不等于 Docker 已验证。
 
 Bug/平台 Issue 请使用表单并只提供复制白名单诊断或合成反例。不请求贡献者在公开 Issue 中发送 API Key、Cookie、用户 ID、数据库或完整迁移包。
 

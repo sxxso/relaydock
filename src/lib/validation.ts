@@ -137,6 +137,7 @@ export const settingsSchema = z
       .default("dots"),
     inkColor: z.string().regex(/^#[0-9a-fA-F]{6}$/).nullable().default(null),
     inkOpacity: z.number().int().min(0).max(100).default(100),
+    inkStyle: z.enum(["wake", "stardust", "orbit"]).default("wake"),
     mapOpacity: z.number().int().min(0).max(100).default(100),
     mapDensity: z.enum(["sparse", "standard", "dense"]).default("standard"),
   })
@@ -416,6 +417,7 @@ export type Settings = {
   mapBackground?: z.infer<typeof settingsSchema>["mapBackground"];
   inkColor?: string | null;
   inkOpacity?: number;
+  inkStyle?: "wake" | "stardust" | "orbit";
   mapOpacity?: number;
   mapDensity?: "sparse" | "standard" | "dense";
 };

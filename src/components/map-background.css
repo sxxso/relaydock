@@ -1,10 +1,10 @@
 .map-pattern-lines {
   color: color-mix(in srgb, var(--ink) 20%, transparent);
 }
-[data-background="contours"] .map-pattern-lines,
-[data-background="sea"] .map-pattern-lines {
+[data-background="contours"] .map-pattern-lines {
   color: color-mix(in srgb, var(--ink) 11%, transparent);
 }
+[data-background="sea"] .map-pattern-lines { color: color-mix(in srgb, var(--ink-soft) 44%, transparent); }
 .map-pattern-plane {
   pointer-events: none;
 }

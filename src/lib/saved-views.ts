@@ -10,6 +10,7 @@ export const savedViewFiltersSchema = z
     archive: z.enum(["active", "archived", "all"]).default("active"),
     recordAge: z.enum(["any", "older-than-7d"]).default("any"),
     sort: z.enum(["name", "recent", "favorite"]).default("name"),
+    attention: z.enum(["all", "low", "stale", "unknown", "failed"]).optional(),
   })
   .strict();
 

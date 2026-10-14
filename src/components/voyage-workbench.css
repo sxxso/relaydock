@@ -1,0 +1,90 @@
+/* Shared visual contract, including portalled controls. */
+html:has(.app-shell) {
+ /* Inherit the loading screen palette from globals.css in both themes. */
+ --control-radius:6px; --surface-shadow:0 3px 12px color-mix(in srgb,var(--ink) 5%,transparent);
+}
+body:has(.app-shell) { background-image:none; }
+.app-shell { background:var(--paper); }
+.app-shell .app-header { border-bottom:1px solid var(--line);background:var(--paper);box-shadow:none; }
+.app-shell .brand-mark { color:var(--accent); }
+.app-shell .sites-page { padding-top:20px; }
+.app-shell .workspace-heading { position:relative;isolation:isolate;min-height:148px;padding:18px 24px;margin:0;border:0;align-items:center;gap:20px; }
+.app-shell .workspace-heading::after { content:none; }
+.app-shell .workspace-heading-copy,.app-shell .heading-companions { position:relative;z-index:1; }
+.app-shell .workspace-heading-copy { max-width:46%; }
+.app-shell .workspace-heading h1 { font-family:inherit;font-size:30px;font-weight:700;letter-spacing:0;margin:7px 0; }
+.app-shell .workspace-eyebrow { display:flex;align-items:center;gap:8px;font-size:12px;letter-spacing:0;color:var(--ink-soft); }
+.app-shell .workspace-heading p { color:var(--ink-soft); }
+.app-shell .heading-note { display:none; }
+.app-shell .heading-companions { gap:20px;min-width:0; }
+.app-shell .balance-summary { background:none;border:0;border-left:1px solid var(--line);padding:10px 0 10px 22px;box-shadow:none;max-width:420px;flex-wrap:wrap; }
+.app-shell .balance-summary strong { letter-spacing:0;font-size:30px;font-weight:600; }
+.app-shell .balance-summary span { color:var(--ink-soft); }
+.app-shell .workspace-toolbar[data-toolbar="floating"] { border:0;border-bottom:1px solid var(--line);border-radius:0;box-shadow:none;background:var(--paper);padding:16px 20px;margin-bottom:0; }
+.app-shell .attention-filters { padding:9px 20px;margin-bottom:16px;border-bottom:1px solid var(--line);background:var(--paper); }
+.app-shell .attention-filters button { font-weight:500; }
+.app-shell .workspace-toolbar[data-toolbar="floating"]:focus-within { box-shadow:none; }
+body:has(.app-shell) .button { border:1px solid var(--line);border-radius:var(--control-radius);box-shadow:none;font-weight:600; }
+body:has(.app-shell) .button:hover:not(:disabled) { border-color:var(--bauhaus-blue);box-shadow:0 2px 5px #23464b12;transform:translateY(-1px); }
+body:has(.app-shell) .button.primary { border-color:var(--accent); }
+body:has(.app-shell) .button.danger-button { border-color:var(--danger); }
+body:has(.app-shell) .icon-button { border-radius:var(--control-radius); }
+body:has(.app-shell) .atlas-select-trigger { border-radius:var(--control-radius);box-shadow:none; }
+body:has(.app-shell) .atlas-select-content { border-radius:8px;box-shadow:0 10px 30px #173c4220; }
+body:has(.app-shell) .atlas-select-item,body:has(.app-shell) .atlas-select-check,body:has(.app-shell) .atlas-select-count { border-radius:4px; }
+.app-shell .query-route-switch { border-radius:var(--control-radius);background:var(--chip); }
+.app-shell .query-route-switch button { border-radius:4px; }
+.app-shell .query-route-switch button[aria-pressed="true"] { background:var(--surface);border-color:var(--line); }
+.app-shell .view-switch { border:1px solid var(--line);border-radius:var(--control-radius);box-shadow:none; }
+.app-shell .view-switch::before { border-radius:3px;box-shadow:none; }
+.app-shell .search-box { border:1px solid var(--line);border-radius:var(--control-radius);background:var(--paper); }
+.app-shell .map-style-control .atlas-select-trigger,.app-shell .map-group-index > summary,
+.app-shell .map-controls,.app-shell .map-minimap,.app-shell .map-move-launcher,
+.app-shell .map-move-panel { border:1px solid var(--line);border-radius:var(--control-radius);box-shadow:var(--surface-shadow); }
+.app-shell .map-group-index .map-group-items { border:1px solid var(--line);border-radius:0 0 6px 6px;box-shadow:var(--surface-shadow); }
+.app-shell .map-controls button { border-radius:4px; }
+.app-shell .map-minimap svg { border-color:var(--line); }
+.app-shell .atlas-map { border:1px solid var(--line);border-radius:8px;box-shadow:none; }
+.sea-atmosphere { position:absolute;inset:0;pointer-events:none; }
+.app-shell .atlas-map[data-background="sea"] { background:var(--paper); }
+.app-shell .atlas-map .island-wash { fill:color-mix(in srgb,var(--group-mark) 10%,var(--surface)); }
+.app-shell .atlas-map .island-shelf { stroke-width:16; }
+.app-shell .atlas-map .island-title { font-family:"KaiTi","STKaiti","Kaiti SC",serif;font-size:23px;font-weight:500;letter-spacing:1px; }
+.app-shell .atlas-map .node-core { stroke-width:.8; }
+.app-shell .atlas-map .node-name,.app-shell .atlas-map .node-balance { stroke:none; }
+.app-shell .account-detail { border:1px solid var(--line);border-radius:8px;background:var(--surface);box-shadow:none; }
+.app-shell .detail-top { color:var(--muted); }
+.app-shell .detail-identity { padding:9px 0 16px;border-bottom:1px solid var(--line); }
+.app-shell .site-avatar { border-radius:6px; }
+.app-shell .detail-balance { position:relative;isolation:isolate;background:color-mix(in srgb,var(--group-mark,var(--bauhaus-blue)) 6%,var(--surface));border-bottom:0;border-radius:6px;padding:20px 14px;margin:14px 0;overflow:hidden; }
+.app-shell .detail-balance::before { content:'';position:absolute;width:170px;height:170px;right:-100px;top:5px;border:1px solid var(--group-mark,var(--line));border-radius:50%;box-shadow:0 0 0 15px color-mix(in srgb,var(--group-mark,var(--line)) 6%,transparent);opacity:.4;z-index:-1; }
+.app-shell .detail-balance strong { letter-spacing:0;font-weight:550; }
+.app-shell .detail-meta { background:none;padding:8px 0;margin:10px 0; }
+.app-shell .detail-secondary { background:var(--surface);padding-bottom:8px; }
+.app-shell .page-heading { padding:24px 0;border:0;border-bottom:1px solid var(--line);background:none; }
+.app-shell .page-heading h1 { font-family:inherit;font-size:28px;font-weight:650; }
+.app-shell .page-heading::after { left:0;bottom:-1px;width:56px;height:3px;background:var(--accent); }
+.app-shell .settings-section { border-top:1px solid var(--line); }
+.app-shell .settings-label > svg { background:none;padding:0;border:0;box-shadow:none;color:var(--bauhaus-blue); }
+.app-shell .history-chart,.app-shell .site-list { border:1px solid var(--line);border-radius:8px;background:var(--surface);box-shadow:none; }
+.app-shell .site-row { border-bottom:1px solid var(--line); }
+.app-shell .site-row:nth-child(even) { background:color-mix(in srgb,var(--bauhaus-blue) 2%,var(--surface)); }
+body:has(.app-shell) .modal-content { border:1px solid var(--line);border-radius:8px;background:var(--surface);box-shadow:0 24px 80px #16383f30; }
+body:has(.app-shell) .modal-heading { padding-bottom:16px;border-bottom:1px solid var(--line); }
+body:has(.app-shell) .modal-heading h2 { font-family:inherit;font-weight:650; }
+body:has(.app-shell) .field input,body:has(.app-shell) .field textarea { border-width:1px;border-radius:6px; }
+.app-shell .toast,.app-shell .undo-notice { border:1px solid var(--line);border-radius:6px;box-shadow:0 5px 20px #16383f20; }
+@media(prefers-reduced-motion:no-preference) { html:not([data-motion="false"]) .app-shell .detail-balance::before { animation:detail-tide 7s ease-in-out infinite alternate; } }
+@keyframes detail-tide { from { transform:translate(8px,-6px); } to { transform:translate(-10px,14px); } }
+@media(max-width:1000px) { .app-shell .balance-summary { max-width:280px; } }
+@media(max-width:760px) {
+ .app-shell .workspace-heading { padding:16px;min-height:180px;gap:8px; }
+ .app-shell .workspace-heading-copy { max-width:100%;flex:1 0 100%; }
+ .app-shell .workspace-heading h1 { font-size:26px; }
+ .app-shell .heading-companions { width:100%;justify-content:space-between;gap:12px; }
+ .app-shell .balance-summary { max-width:calc(100% - 80px);padding:8px 0 8px 14px; }
+ .app-shell .balance-summary strong { font-size:25px; }
+ .app-shell .workspace-toolbar[data-toolbar="floating"] { padding:12px; }
+ .app-shell .attention-filters { padding:8px 12px; }
+ .app-shell .page-heading { padding:20px 0; }
+}

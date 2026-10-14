@@ -1,0 +1,87 @@
+/* Character choreography adapted from login-animated-characters (MIT).
+   Conic shimmer layering adapted from Magic UI ShimmerButton (MIT).
+   See docs/MOTION-SOURCES.md. */
+.login-page .login-layout { gap: clamp(32px, 6vw, 100px); }
+.login-page .login-intro h1 { font-size: clamp(30px, 3.4vw, 46px); line-height: 1.35; }
+.login-page .login-form { position: relative; padding: 36px 30px; max-width: 410px; width: 100%; border: 1px solid var(--line); border-radius: 24px; background: var(--paper); box-shadow: 0 24px 80px color-mix(in srgb, var(--ink) 8%, transparent); }
+.login-page .login-illustration { display: none; }
+.login-page .subtle-badge { color: var(--ink-soft); border-color: var(--line); }
+.login-page::before { animation: harbor-orbit 18s ease-in-out infinite alternate; }
+.login-page::after { animation: harbor-drift 8s ease-in-out infinite alternate; }
+.login-password-wrap { position: relative; display: block; }
+.login-password-wrap input { width: 100%; padding-right: 50px; }
+.login-password-toggle { position: absolute; right: 4px; top: 3px; width: 40px; height: 39px; display: grid; place-items: center; border: 0; background: transparent; color: var(--muted); border-radius: 8px; cursor: pointer; }
+.login-password-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.companions-scene { position: relative; width: 100%; max-width: 530px; height: 310px; margin: 14px 0 24px; --look-x: 0px; --look-y: 0px; --lean: 0deg; }
+.companions-floor { position: absolute; left: 3%; right: 0; bottom: 36px; height: 30px; border-radius: 50%; background: color-mix(in srgb, var(--ink) 10%, transparent); filter: blur(5px); }
+.companion { position: absolute; bottom: 49px; width: 25%; animation: companion-arrive .85s cubic-bezier(.16,1,.3,1) both; }
+.companion-body { position: relative; height: 100%; background: var(--body); border-radius: 18px 18px 5px 5px; transform-origin: 50% 100%; transform: skewX(var(--lean)); transition: transform .6s cubic-bezier(.22,1,.36,1); box-shadow: inset -12px 0 0 #00000009; }
+.companion-purple { left: 18%; height: 232px; --body: #8271e8; z-index: 1; }
+.companion-ink { left: 43%; height: 181px; --body: #293241; z-index: 2; width: 21%; }
+.companion-coral { left: 3%; height: 133px; --body: #ed896c; z-index: 3; width: 37%; }
+.companion-coral .companion-body { border-radius: 100px 100px 10px 10px; }
+.companion-gold { left: 65%; height: 153px; --body: #f0c85c; z-index: 4; width: 26%; }
+.companion-gold .companion-body { border-radius: 70px 70px 8px 8px; }
+.companion-face { position: absolute; top: 38px; left: 27%; display: flex; gap: 17px; transform: translate(var(--look-x), var(--look-y)); transition: transform .4s ease; }
+.companion-coral .companion-face { top: 49px; left: 34%; }
+.companion-eye { display: block; background: #fffaf2; width: 21px; height: 23px; border-radius: 50%; position: relative; animation: companion-blink 5.8s infinite; }
+.companion-ink .companion-eye { animation-delay: 1.4s; }
+.companion-gold .companion-eye { animation-delay: 2.6s; }
+.companion-eye i { position: absolute; width: 9px; height: 10px; border-radius: 50%; background: #202734; left: 6px; top: 7px; transform: translate(calc(var(--look-x) * .4), calc(var(--look-y) * .4)); transition: transform .3s; }
+.companion-mouth { position: absolute; top: 39px; left: 21px; width: 16px; height: 8px; border-bottom: 3px solid #202734; border-radius: 0 0 18px 18px; }
+.companion-ink .companion-mouth { border-color: #fffaf2; }
+.companion-hand { position: absolute; top: 100px; width: 28px; height: 42px; border-radius: 20px; background: var(--body); filter: brightness(.91); opacity: 0; transition: transform .5s, opacity .25s; }
+.hand-left { left: 18%; transform: translate(-18px,40px) rotate(-25deg); }
+.hand-right { right: 12%; transform: translate(18px,40px) rotate(25deg); }
+.companions-scene[data-state=private] .companion-body { transform: skewX(-7deg); }
+.companions-scene[data-state=private] .companion-face { transform: translate(-16px,-4px); }
+.companions-scene[data-state=private] .companion-eye { animation: none; transform: scaleY(.12); }
+.companions-scene[data-state=private] .companion-purple .companion-hand { opacity: 1; transform: translate(0,-64px) rotate(-12deg); }
+.companions-scene[data-state=peek] .companion-face { transform: translate(-13px,-3px); }
+.companions-scene[data-state=peek] .companion-purple .companion-face { animation: companion-peek 3s ease-in-out infinite; }
+.companions-scene[data-state=busy] .companion-body { animation: companion-hop .85s ease-in-out infinite alternate; }
+.companions-scene[data-state=error] .companion-body { animation: companion-no .45s ease-in-out; }
+.companions-scene[data-state=error] .companion-mouth { border-bottom: 0; border-top: 3px solid #202734; border-radius: 18px 18px 0 0; }
+.companion-caption { position: absolute; bottom: 0; width: 100%; text-align: center; font-size: 12px; color: var(--muted); }
+.companions-orbit { position: absolute; border: 1px dashed color-mix(in srgb, var(--accent) 28%, transparent); border-radius: 50%; width: 94%; height: 170px; top: 59px; transform: rotate(-15deg); }
+.orbit-two { transform: rotate(20deg); width: 80%; left: 10%; opacity: .45; }
+.scene-star { position: absolute; color: var(--accent); font-size: 32px; animation: harbor-drift 4s ease-in-out infinite alternate; }
+.star-one { left: 2%; top: 20px; }.star-two { right: 9%; top: 14px; animation-delay: -2s; }
+.login-submit { position: relative; isolation: isolate; overflow: hidden; border-radius: 12px; }
+.login-submit::before { content: ''; position: absolute; z-index: -2; inset: -150%; background: conic-gradient(from 0deg, transparent 0deg, #ffffff90 65deg, transparent 95deg); animation: harbor-spin 4s linear infinite; }
+.login-submit::after { content: ''; position: absolute; z-index: -1; inset: 2px; background: var(--accent); border-radius: 10px; }
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-motion=false]) .login-form { animation: harbor-enter .8s cubic-bezier(.16,1,.3,1) both; }
+  html:not([data-motion=false]) .workspace-heading { animation: harbor-enter .6s backwards; }
+  /* Fixed menus use viewport coordinates: never transform their ancestor. */
+  html:not([data-motion=false]) .workspace-toolbar { animation: panel-register .65s .08s backwards; }
+  html:not([data-motion=false]) .account-detail[data-state=open] { animation: none; }
+  html:not([data-motion=false]) .balance-summary strong { animation: harbor-enter .5s both; }
+  html:not([data-motion=false]) .button { transition: transform .2s, box-shadow .2s, background .2s; }
+  html:not([data-motion=false]) .button:active:not(:disabled) { transform: translateY(2px) scale(.97); }
+}
+@keyframes companion-arrive { from { opacity: 0; transform: translateY(60px) scale(.85); } to { opacity: 1; transform: none; } }
+@keyframes companion-blink { 0%,43%,47%,100% { transform: scaleY(1); } 45% { transform: scaleY(.1); } }
+@keyframes companion-peek { 0%,65%,100% { transform: translate(-13px,-3px); } 73%,87% { transform: translate(12px,0); } }
+@keyframes companion-hop { to { transform: translateY(-9px) rotate(2deg); } }
+@keyframes companion-no { 25%,75% { transform: rotate(-4deg); } 50% { transform: rotate(4deg); } }
+@keyframes harbor-enter { from { opacity: 0; translate: 0 16px; } to { opacity: 1; translate: 0 0; } }
+@keyframes harbor-drift { to { translate: 0 -12px; rotate: 10deg; } }
+@keyframes harbor-orbit { to { translate: -40px 30px; scale: 1.12; } }
+@keyframes harbor-spin { to { rotate: 360deg; } }
+@media (max-width: 760px) {
+  .login-page .login-layout { display: flex; flex-direction: column; gap: 12px; padding: 24px 0; }
+  .login-page .login-intro { display: block; width: 100%; }
+  .login-page .login-intro h1 { font-size: 26px; margin: 10px 0; }
+  .login-page .login-intro > p, .login-page .login-promises, .login-page .ink-stroke { display: none; }
+  .companions-scene { height: 230px; max-width: 360px; margin: 0 auto 8px; }
+  .companion-purple { height: 157px; }.companion-ink { height: 125px; }.companion-coral { height: 100px; }.companion-gold { height: 115px; }
+  .companion-face { gap: 10px; top: 29px; }.companion-coral .companion-face { top: 38px; }
+  .companion-eye { width: 17px; height: 19px; }.companion-eye i { left: 4px; top: 5px; width: 8px; height: 9px; }
+  .companion-mouth { top: 28px; left: 14px; }.companion-hand { top: 88px; width: 23px; }
+  .login-page .login-form { padding: 24px; max-width: 440px; }
+}
+html[data-motion=false] .companions-scene *, html[data-motion=false] .login-page::before, html[data-motion=false] .login-page::after, html[data-motion=false] .login-submit::before { animation: none !important; transition: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  .companions-scene *, .login-page::before, .login-page::after, .login-submit::before { animation: none !important; transition: none !important; }
+}

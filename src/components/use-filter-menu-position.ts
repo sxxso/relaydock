@@ -68,6 +68,32 @@ function bindFilterMenu(node: HTMLDetailsElement): FilterMenuBinding | null {
   const schedule = () => {
     if (node.open && frame === null) frame = win.requestAnimationFrame(update);
   };
+  const close = (restoreFocus = false) => {
+    node.open = false;
+    if (restoreFocus) anchor.focus();
+  };
+  const onPointerDown = (event: PointerEvent) => {
+    const target = event.target;
+    if (!node.open || !(target instanceof win.Element)) return;
+    // Radix select choices live in a portal outside their parent details.
+    if (node.contains(target) || target.closest('[role="listbox"],[data-radix-popper-content-wrapper]')) return;
+    close();
+  };
+  const onKeyDown = (event: KeyboardEvent) => {
+    if (!node.open || event.key !== "Escape" || event.defaultPrevented) return;
+    if (doc.querySelector('[role="dialog"], [role="listbox"][data-state="open"]')) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    close(true);
+  };
+  const onToggle = () => {
+    if (node.open) {
+      for (const other of doc.querySelectorAll<HTMLDetailsElement>(".filter-menu[open]")) {
+        if (other !== node) other.open = false;
+      }
+    }
+    update();
+  };
   const onScroll = (event: Event) => {
     // Scrolling the panel's choices must not reset or reposition that scroller.
     if (event.target instanceof win.Node && panel.contains(event.target)) return;
@@ -76,7 +102,9 @@ function bindFilterMenu(node: HTMLDetailsElement): FilterMenuBinding | null {
   // Observe only the anchor: writes to panel dimensions cannot trigger this observer.
   const observer = win.ResizeObserver ? new win.ResizeObserver(schedule) : null;
   observer?.observe(anchor);
-  node.addEventListener("toggle", update);
+  node.addEventListener("toggle", onToggle);
+  doc.addEventListener("pointerdown", onPointerDown);
+  doc.addEventListener("keydown", onKeyDown);
   doc.addEventListener("scroll", onScroll, true);
   win.addEventListener("resize", schedule, { passive: true });
   win.visualViewport?.addEventListener("resize", schedule, { passive: true });
@@ -88,7 +116,9 @@ function bindFilterMenu(node: HTMLDetailsElement): FilterMenuBinding | null {
     dispose() {
       cancelFrame();
       observer?.disconnect();
-      node.removeEventListener("toggle", update);
+      node.removeEventListener("toggle", onToggle);
+      doc.removeEventListener("pointerdown", onPointerDown);
+      doc.removeEventListener("keydown", onKeyDown);
       doc.removeEventListener("scroll", onScroll, true);
       win.removeEventListener("resize", schedule);
       win.visualViewport?.removeEventListener("resize", schedule);

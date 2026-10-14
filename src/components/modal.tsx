@@ -27,7 +27,6 @@ export function Modal({
         <Dialog.Overlay className="modal-overlay" />
         <Dialog.Content
           className={"modal-content " + (wide ? "modal-wide" : "")}
-          aria-describedby={description ? undefined : undefined}
           onEscapeKeyDown={(e) => {
             if (closeDisabled) e.preventDefault();
           }}

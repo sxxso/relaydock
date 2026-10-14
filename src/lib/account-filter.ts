@@ -5,6 +5,15 @@ import { matchesSearch } from "./map-management";
 import type { SavedViewFilters } from "./saved-views";
 
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+export function matchesAttention(account: Account, attention: SavedViewFilters["attention"], now = Date.now()) {
+  switch (attention) {
+    case "low": return isLow(account);
+    case "stale": return account.balance !== null && isOlderThanSevenDays(account, now);
+    case "unknown": return account.balance === null;
+    case "failed": return account.lastSyncStatus === "error";
+    default: return true;
+  }
+}
 
 export function isOlderThanSevenDays(
   account: Pick<Account, "lastSnapshotAt">,
@@ -29,6 +38,7 @@ export function filterAccounts(
         (filters.currency === "all" || unitKey(account) === filters.currency) &&
         (!filters.favorites || account.favorite) &&
         (!filters.onlyLow || isLow(account)) &&
+        matchesAttention(account, filters.attention, now) &&
         (filters.archive === "all" ||
           account.archived === (filters.archive === "archived")) &&
         (filters.recordAge === "any" || isOlderThanSevenDays(account, now))
@@ -52,6 +62,7 @@ export function hasAccountFilters(filters: SavedViewFilters) {
     filters.currency !== "all" ||
     filters.favorites ||
     filters.onlyLow ||
-    filters.recordAge !== "any"
+    filters.recordAge !== "any" ||
+    (!!filters.attention && filters.attention !== "all")
   );
 }

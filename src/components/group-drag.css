@@ -16,18 +16,20 @@
 }
 .island-drag-handle .group-grip {
   color: var(--muted);
-  opacity: 0.6;
+  opacity: 0;
   pointer-events: none;
 }
 .island-drag-handle .island-title {
   pointer-events: none;
 }
 .island-drag-handle:hover > rect {
-  fill: var(--chip);
-  stroke: var(--line);
+  fill: color-mix(in srgb, var(--group-mark) 5%, transparent);
+  stroke: transparent;
 }
+.island-drag-handle:hover .group-grip,
+.island-drag-handle:focus-visible .group-grip { opacity: .65; }
 .island-drag-handle:focus-visible > rect {
-  fill: var(--chip);
+  fill: transparent;
   stroke: var(--accent);
   stroke-width: 2;
 }
@@ -38,8 +40,8 @@
   cursor: grabbing;
 }
 .ink-island[data-group-moving="true"] .island-drag-handle > rect {
-  fill: var(--chip);
-  stroke: var(--accent);
+  fill: color-mix(in srgb, var(--group-mark) 8%, transparent);
+  stroke: transparent;
 }
 .atlas-map[data-group-dragging] .map-node {
   cursor: grabbing;

@@ -55,7 +55,6 @@ html[data-theme-transition="running"]::view-transition-old(root) {
 }
 .sites-page > .workspace-heading,
 .sites-page > .workspace-toolbar,
-.sites-page > .workspace-body,
 .page-content {
   animation: panel-register 480ms var(--ease) backwards;
 }
@@ -276,6 +275,12 @@ html[data-theme-transition="running"]::view-transition-old(root) {
 .modal-overlay[data-state="closed"] {
   animation: close-overlay 140ms ease-in;
 }
+/* A command can hand off directly to another dialog. Keep the exit lifecycle,
+   but never paint the outgoing sheet or its second backdrop over the new one. */
+body:has(.modal-content[data-state="open"]) .modal-content[data-state="closed"],
+body:has(.modal-content[data-state="open"]) .modal-overlay[data-state="closed"] {
+  visibility: hidden;
+}
 @keyframes open-overlay {
   from {
     opacity: 0;
@@ -294,7 +299,6 @@ html[data-theme-transition="running"]::view-transition-old(root) {
 }
 @keyframes open-paper {
   from {
-    opacity: 0;
     transform: translate(-50%, calc(-50% + 12px)) scale(0.96);
   }
   68% {
@@ -314,7 +318,7 @@ html[data-theme-transition="running"]::view-transition-old(root) {
 }
 .account-detail[data-state="open"] {
   transform-origin: right top;
-  animation: open-detail 320ms var(--ease);
+  animation: none;
 }
 .account-detail[data-state="closing"] {
   animation: close-detail 180ms ease-in forwards;
@@ -470,7 +474,7 @@ html[data-theme-transition="running"]::view-transition-old(root) {
     transform: translateX(100%);
   }
   .account-detail[data-state="open"] {
-    animation-name: open-sheet;
+    animation-name: none;
     transform-origin: center bottom;
   }
   .account-detail[data-state="closing"] {

@@ -1,0 +1,60 @@
+/* Terrain and node leaves animate independently of D3's world/drag transforms. */
+.atlas-map { background: var(--surface); border-color: var(--line); box-shadow: 0 4px 0 #17253d0d; }
+.atlas-map .island-terrain { transform-box: fill-box; transform-origin: center; transition: transform .55s var(--ease); }
+.atlas-map .island-tide { fill: none; stroke: var(--group-mark); stroke-width: 1.5; opacity: .3; transform-box: fill-box; transform-origin: center; }
+.atlas-map .tide-outer { transform: scale(1.11); }
+.atlas-map .tide-inner { transform: scale(1.055); }
+.atlas-map .island-shelf { fill: var(--group-wash); stroke: color-mix(in srgb, var(--group-mark) 16%, var(--paper)); stroke-width: 19; stroke-linejoin: round; }
+[data-theme="dark"] .atlas-map .island-shelf { stroke: color-mix(in srgb, var(--group-mark) 28%, var(--paper)); }
+.atlas-map .island-wash { opacity: 1; fill: color-mix(in srgb, var(--group-wash) 80%, var(--surface)); }
+.atlas-map .island-coast { fill: none; stroke: color-mix(in srgb, var(--group-mark) 42%, var(--surface)); stroke-width: 2; }
+.atlas-map .island-contour { fill: none; stroke: var(--group-mark); stroke-width: 1; stroke-dasharray: 2 7; opacity: .18; transform: scale(.9); transform-box: fill-box; transform-origin: center; }
+.atlas-map .ink-island[data-collapsed="true"] .island-terrain { transform: scale(.88); }
+.atlas-map .ink-island[data-drop-target="true"] .island-coast,
+.atlas-map .ink-island[data-group-moving="true"] .island-coast { stroke: var(--group-mark); stroke-width: 4; }
+.atlas-map .ink-island[data-drop-target="true"] .island-shelf { stroke: color-mix(in srgb, var(--group-mark) 40%, var(--surface)); }
+.atlas-map .island-title { fill: var(--ink); }
+.atlas-map .node-name { fill: var(--ink); font-weight: 600; }
+.atlas-map .node-balance { fill: var(--ink-soft); }
+.atlas-map .node-halo { fill: var(--surface); }
+.atlas-map .node-ripple { fill: none; stroke: var(--group-mark); stroke-width: 1.7; opacity: 0; transform-box: fill-box; transform-origin: center; }
+.atlas-map .node-shadow { fill: #17253d; opacity: .12; transition: opacity .25s; }
+.atlas-map .node-core, .atlas-map .node-initial { transition: translate .3s var(--motion-snap), filter .3s; }
+.atlas-map .map-node.is-selected > .node-core,
+.atlas-map .map-node.is-selected > .node-initial { translate: 0 -3px; }
+.atlas-map .map-node.is-selected > .node-core { filter: drop-shadow(0 4px 3px #17253d26); }
+.atlas-map .map-drag-ghost > .node-core { filter: drop-shadow(0 7px 4px #17253d40); }
+@media (hover: hover) and (pointer: fine) {
+ .atlas-map:not([data-dragging="true"]) .map-node:hover > .node-core,
+ .atlas-map:not([data-dragging="true"]) .map-node:hover > .node-initial { translate: 0 -5px; }
+ .atlas-map .map-node:hover > .node-shadow { opacity: .22; }
+}
+@media (prefers-reduced-motion: no-preference) {
+ html:not([data-motion="false"]) .atlas-map:not(.no-motion) .island-wash { animation: land-arrive .9s var(--ease) var(--island-delay) backwards; }
+ html:not([data-motion="false"]) .atlas-map:not(.no-motion) .island-coast { animation: coast-draw 1.1s var(--ease) var(--island-delay) backwards; }
+ html:not([data-motion="false"]) .atlas-map:not(.no-motion) .ink-island[data-ambient="true"] .tide-outer { animation: tide-breathe 7s ease-in-out var(--tide-delay) infinite; }
+ html:not([data-motion="false"]) .atlas-map:not(.no-motion) .ink-island[data-ambient="true"] .tide-inner { animation: tide-breathe 7s ease-in-out calc(var(--tide-delay) - 3.5s) infinite; }
+ html:not([data-motion="false"]) .atlas-map:not(.no-motion) .map-node > .node-initial,
+ html:not([data-motion="false"]) .atlas-map:not(.no-motion) .map-node > .node-name { animation: berth-arrive .65s var(--ease) var(--node-delay) backwards; }
+ html:not([data-motion="false"]) .atlas-map:not(.no-motion) .map-node:hover > .node-ripple,
+ html:not([data-motion="false"]) .atlas-map:not(.no-motion) .map-node:focus-visible > .node-ripple,
+ html:not([data-motion="false"]) .atlas-map:not(.no-motion) .map-node.is-selected > .node-ripple { animation: berth-ripple .85s ease-out; }
+ .atlas-map[data-panning="true"] .island-tide,
+ .atlas-map[data-ambient-paused="true"] .island-tide { animation-play-state: paused !important; }
+}
+.atlas-map[data-dragging="true"] .node-core,
+.atlas-map[data-dragging="true"] .node-initial,
+.atlas-map[data-group-dragging] .node-core,
+.atlas-map[data-group-dragging] .node-initial { translate: none !important; animation: none !important; }
+.atlas-map[data-dragging="true"] .node-ripple { animation: none !important; }
+@media (prefers-reduced-motion: reduce) {
+ .atlas-map .node-core, .atlas-map .node-initial { translate: none !important; }
+}
+html[data-motion="false"] .atlas-map .node-core,
+html[data-motion="false"] .atlas-map .node-initial,
+.atlas-map.no-motion .node-core, .atlas-map.no-motion .node-initial { translate: none !important; }
+@keyframes coast-draw { from { stroke-dasharray: 1; stroke-dashoffset: 1; } to { stroke-dasharray: 1; stroke-dashoffset: 0; } }
+@keyframes land-arrive { from { opacity: .1; } to { opacity: 1; } }
+@keyframes berth-arrive { from { opacity: 0; translate: 0 8px; } to { opacity: 1; translate: none; } }
+@keyframes tide-breathe { 0%,100% { transform: scale(1.04); opacity: .32; } 65% { transform: scale(1.12); opacity: .08; } }
+@keyframes berth-ripple { from { transform: scale(.85); opacity: .75; } to { transform: scale(1.7); opacity: 0; } }

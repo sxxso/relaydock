@@ -1,5 +1,8 @@
 "use client";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Activity as ViewActivity, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ListCruise } from "./list-cruise";
+import "./harbor-identity.css";
+import { LoginCompanions } from "./login-companions";
 import {
   Map,
   LayoutList,
@@ -30,9 +33,13 @@ import {
   Palette,
   Activity,
   CalendarCheck,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import type { Account, Settings } from "@/lib/validation";
-import { filterAccounts, hasAccountFilters, isOlderThanSevenDays } from "@/lib/account-filter";
+import { filterAccounts, hasAccountFilters, isOlderThanSevenDays, matchesAttention } from "@/lib/account-filter";
+import { runBalanceBatch, type BalanceBatchRow, type BatchControl } from "@/lib/balance-batch";
+import { BalanceBatchPanel } from "./balance-batch-panel";
 import { type SavedView, type SavedViewFilters } from "@/lib/saved-views";
 import { displayAmount, isLow, totals, unitKey } from "@/lib/money";
 import { groupColorIndex } from "@/lib/map-layout";
@@ -40,6 +47,8 @@ import { groupColorStyle, type GroupColors } from "@/lib/group-colors";
 import { AtlasMap } from "./atlas-map";
 import { AccountForm, BalanceForm, type Send } from "./account-form";
 import { Modal } from "./modal";
+import { HarborPet } from "./harbor-pet";
+import { VoyageScene } from "./voyage-scene";
 import { ModelInsightPanel } from "./model-insight-panel";
 import { CheckinPanel } from "./checkin-panel";
 import { InvitationPanel } from "./invitation-panel";
@@ -60,6 +69,9 @@ import {
 } from "@/lib/map-management";
 import { BatchManagement, SelectionBox } from "./batch-management";
 import "./interaction-motion.css";
+import "./workspace-motion.css";
+import "./island-motion.css";
+import "./voyage-workbench.css";
 import { QueryRouteSwitch } from "./query-route-switch";
 import type { QueryRouteMode, QueryRoutingStatus } from "@/lib/query-routing";
 import type { GroupLayout } from "@/lib/group-layout";
@@ -78,11 +90,8 @@ import {
 function Brand() {
   return (
     <div className="brand">
-      <span className="brand-mark">
-        <Compass size={25} strokeWidth={1.3} />
-      </span>
-      <strong>汇站</strong>
-      <span className="brand-english">Atlas</span>
+      <span className="dock-brand-mark" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M24 5 8 30h16Z" fill="var(--accent)"/><path d="m28 12 13 18H28Z" fill="var(--warm)"/><path d="M6 34h36l-7 7H14Z" fill="var(--ink)"/><path d="M5 45h38M25 5v27" fill="none" stroke="var(--ink)" strokeWidth="2"/></svg></span>
+      <span className="dock-brand-type"><strong><span>汇</span><span>站</span><i className="dock-brand-seal" aria-hidden="true">泊</i></strong><span className="dock-brand-name">RelayDock</span></span>
     </div>
   );
 }
@@ -96,6 +105,8 @@ function Login({
   let [password, setPassword] = useState(""),
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false);
+  const [passwordFocused, setPasswordFocused] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   return (
     <main className="login-page">
       <header>
@@ -115,6 +126,7 @@ function Login({
             <br />
             都在你的掌握之中。
           </p>
+          <LoginCompanions state={busy ? "busy" : error ? "error" : showPassword ? "peek" : passwordFocused ? "private" : "idle"} />
           <div className="login-illustration" aria-hidden="true">
             <svg viewBox="0 0 560 230">
               <path
@@ -193,15 +205,19 @@ function Login({
             >
               <label className="field">
                 <span>管理员密码</span>
+                <span className="login-password-wrap">
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   name="password"
                   autoComplete="current-password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => { setPassword(e.target.value); setError(""); }}
+                  onFocus={() => setPasswordFocused(true)}
+                  onBlur={() => setPasswordFocused(false)}
                   required
-                  autoFocus
                 />
+                <button type="button" className="login-password-toggle" aria-label={showPassword ? "隐藏密码" : "显示密码"} aria-pressed={showPassword} onClick={() => setShowPassword(!showPassword)}>{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}</button>
+                </span>
               </label>
               {error && (
                 <p className="form-error" role="alert">
@@ -275,6 +291,7 @@ export function Workspace() {
     [onlyLow, setOnlyLow] = useState(false),
     [archive, setArchive] = useState<SavedViewFilters["archive"]>("active"),
     [recordAge, setRecordAge] = useState<SavedViewFilters["recordAge"]>("any"),
+    [attention, setAttention] = useState<SavedViewFilters["attention"]>("all"),
     [sort, setSort] = useState<SavedViewFilters["sort"]>("name"),
     [savedViews, setSavedViews] = useState<SavedView[]>([]),
     [activeViewId, setActiveViewId] = useState<string | null>(null),
@@ -299,6 +316,7 @@ export function Workspace() {
     [toast, setToast] = useState(""),
     [loadError, setLoadError] = useState(""),
     [commands, setCommands] = useState(false),
+    [petOpen, setPetOpen] = useState(false),
     [commandSearch, setCommandSearch] = useState("");
   const [collapsedGroups, setCollapsedGroups] = useState<ReadonlySet<string>>(
       new Set(),
@@ -308,6 +326,14 @@ export function Workspace() {
       new Set(),
     );
   const [batchDialogOpen, setBatchDialogOpen] = useState(false);
+  const [balanceBatchOpen, setBalanceBatchOpen] = useState(false);
+  const [balanceRows, setBalanceRows] = useState<BalanceBatchRow[]>([]);
+  const [balanceStarted, setBalanceStarted] = useState(false);
+  const [balanceCancelled, setBalanceCancelled] = useState(false);
+  const [balanceScope, setBalanceScope] = useState("当前筛选结果");
+  const [balanceSkipped, setBalanceSkipped] = useState(0);
+  const [balanceRoute, setBalanceRoute] = useState<QueryRouteMode>("direct");
+  const balanceControl = useRef<BatchControl>({ cancelled: false });
   const [checkinScope, setCheckinScope] = useState<{ accounts: Account[]; scope: "selected" | "filtered" } | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null),
     accountReads = useRef(new AccountReadState()),
@@ -329,16 +355,26 @@ export function Workspace() {
     batchRunning = useRef(false),
     detailTimer = useRef<ReturnType<typeof setTimeout> | null>(null),
     filterPanel = useRef<HTMLDetailsElement>(null),
+    detailMenu = useRef<HTMLDetailsElement>(null),
     searchRef = useRef<HTMLInputElement>(null);
   const resolvedTheme = useAppearance(settings, auth === "ready");
   useFilterMenuPosition(filterPanel);
-  const noticesBlocked = formOpen || balanceOpen || deleteOpen || commands || !!renamingGroup || colorEditingGroup !== null || saveViewOpen || batchDialogOpen || checkinOpen || invitationOpen || checkinScope !== null;
+  useFilterMenuPosition(detailMenu);
+  const noticesBlocked = balanceBatchOpen || petOpen || formOpen || balanceOpen || modelOpen || deleteOpen || commands || !!renamingGroup || colorEditingGroup !== null || saveViewOpen || batchDialogOpen || checkinOpen || invitationOpen || checkinScope !== null;
+  useEffect(() => {
+    if (noticesBlocked) {
+      if (filterPanel.current) filterPanel.current.open = false;
+      if (detailMenu.current) detailMenu.current.open = false;
+    }
+  }, [noticesBlocked]);
   const { action: undoAction, controller: undoController } = usePendingUndo(auth === "ready", noticesBlocked);
   const freshnessNow = useFreshnessClock(auth === "ready" && page === "sites");
   useEffect(
     () => () => {
       if (toastTimer.current) clearTimeout(toastTimer.current);
       if (detailTimer.current) clearTimeout(detailTimer.current);
+      balanceControl.current.cancelled = true;
+      authVersion.current++;
     },
     [],
   );
@@ -367,7 +403,11 @@ export function Workspace() {
         });
         let b = await res.json();
         if (session !== authVersion.current) throw new Error("会话已变化，请重新登录后操作");
-        if (res.status === 401 && path !== "auth/login" && session === authVersion.current) setAuth("login");
+        if (res.status === 401 && path !== "auth/login" && session === authVersion.current) {
+          balanceControl.current.cancelled = true;
+          authVersion.current++;
+          setAuth("login");
+        }
         if (!res.ok)
           throw Object.assign(new Error(b.error || "操作失败"), {
             status: res.status,
@@ -522,6 +562,9 @@ export function Workspace() {
   useEffect(() => {
     if (auth !== "ready") {
       authVersion.current++;
+      balanceControl.current.cancelled = true;
+      setBalanceBatchOpen(false);
+      setBalanceRows([]);
       setCheckinOpen(false);
       setInvitationOpen(false);
       setCheckinScope(null);
@@ -581,6 +624,7 @@ export function Workspace() {
       }
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
+        if (document.querySelector('[role="dialog"]') && !commands) return;
         setCommandSearch("");
         setCommands((v) => !v);
       }
@@ -606,20 +650,6 @@ export function Workspace() {
     settings.motion,
     selected,
   ]);
-  useEffect(() => {
-    const dismiss = (e: PointerEvent) => {
-      const panel = filterPanel.current;
-      const target = e.target as Element;
-      if (
-        panel?.open &&
-        !panel.contains(target) &&
-        !target.closest('[role="listbox"],[data-radix-popper-content-wrapper]')
-      )
-        panel.open = false;
-    };
-    document.addEventListener("pointerdown", dismiss);
-    return () => document.removeEventListener("pointerdown", dismiss);
-  }, []);
   const filters = useMemo<SavedViewFilters>(
     () => ({
       search,
@@ -629,9 +659,10 @@ export function Workspace() {
       onlyLow,
       archive,
       recordAge,
+      ...(attention !== "all" ? { attention } : {}),
       sort,
     }),
-    [search, group, currency, favorites, onlyLow, archive, recordAge, sort],
+    [search, group, currency, favorites, onlyLow, archive, recordAge, attention, sort],
   );
   const filtered = useMemo(
     () => filterAccounts(accounts, filters, freshnessNow),
@@ -653,6 +684,7 @@ export function Workspace() {
     [accounts, archive],
   );
   const filtering = hasAccountFilters(filters);
+  const attentionBase = filterAccounts(accounts, { ...filters, attention: "all", onlyLow: false, recordAge: "any" }, freshnessNow);
   useEffect(() => {
     setBatchSelection((old) => retainVisibleSelection(old, matchingIds));
   }, [matchingIds]);
@@ -682,6 +714,7 @@ export function Workspace() {
       return next;
     });
   async function sync(id: string, quiet = false, mode?: QueryRouteMode) {
+    if (batchRunning.current) { notify("批量查询进行中，请等待完成"); return false; }
     markBusy(id, true);
     try {
       let a = await sendQuery<Account>(
@@ -833,7 +866,7 @@ export function Workspace() {
       if (failed) void load();
     }
   }
-  async function refreshAll() {
+  function refreshAll() {
     if (
       moving ||
       batchRunning.current ||
@@ -841,8 +874,8 @@ export function Workspace() {
       !routingRef.current
     )
       return;
-    const routeMode = routingRef.current.mode;
-    let queue = filtered.filter(
+    const scope = batchSelection.size ? filtered.filter(a => batchSelection.has(a.id)) : filtered;
+    const queue = scope.filter(
       (a) =>
         a.provider !== "manual" &&
         a.hasCredential &&
@@ -853,21 +886,43 @@ export function Workspace() {
       notify("当前视图没有可查询账号，请先配置平台和查询凭据");
       return;
     }
+    setBalanceRows(queue.map(a => ({ id: a.id, name: a.name, state: "queued", message: "等待查询" })));
+    setBalanceScope(batchSelection.size ? "当前勾选账号" : "当前筛选结果");
+    setBalanceSkipped(scope.length - queue.length);
+    setBalanceRoute(routingRef.current.mode);
+    setBalanceStarted(false); setBalanceCancelled(false); setBalanceBatchOpen(true);
+  }
+  async function startBalanceBatch(retry = false) {
+    if (batchRunning.current || routingSaving.current || !routingRef.current || moving) return;
+    const source = retry ? balanceRows.filter(r => r.state === "failed") : balanceRows;
+    const queue = source.filter(row => accounts.some(a => a.id === row.id && !a.archived && a.provider !== "manual" && a.hasCredential && !busy.has(a.id)));
+    if (!queue.length) { notify("没有可查询账号，账号可能已归档、移除或正在处理"); return; }
+    const session = authVersion.current;
+    const control: BatchControl = { cancelled: false };
+    balanceControl.current = control;
+    const routeMode = balanceRoute;
     batchRunning.current = true;
     setBatch(true);
-    let index = 0,
-      success = 0;
-    await Promise.all(
-      Array.from({ length: Math.min(3, queue.length) }, async () => {
-        while (index < queue.length) {
-          let a = queue[index++];
-          if (await sync(a.id, true, routeMode)) success++;
-        }
-      }),
-    );
-    batchRunning.current = false;
-    setBatch(false);
-    notify(`查询结束：${success} 个成功，${queue.length - success} 个失败`);
+    setBalanceStarted(true); setBalanceCancelled(false);
+    const queuedIds = new Set(queue.map(r => r.id));
+    const retained: BalanceBatchRow[] = balanceRows.filter(r => !queuedIds.has(r.id)).map(r =>
+      (!retry || r.state === "failed") ? { ...r, state: "cancelled", message: "账号已不可查询，本次未发出请求" } : r);
+    try {
+      await runBalanceBatch(queue, control, async id => {
+        if (session !== authVersion.current) { control.cancelled = true; throw new Error("会话已变化"); }
+        markBusy(id, true);
+        try {
+          const updated = await sendQuery<Account>(`accounts/${id}/sync`, "POST", { routeMode });
+          if (session === authVersion.current) setAccounts(old => mergeLatestAccounts(old, [updated]));
+        } catch (error) {
+          if ((error as { status?: number }).status === 401 || session !== authVersion.current) control.cancelled = true;
+          throw error;
+        } finally { markBusy(id, false); }
+      }, rows => { if (session === authVersion.current) setBalanceRows([...retained, ...rows]); });
+    } finally {
+      batchRunning.current = false; setBatch(false);
+      if (session === authVersion.current) await load();
+    }
   }
   async function undo() {
     const action = undoController.begin();
@@ -950,6 +1005,14 @@ export function Workspace() {
     setEdit(null);
     setFormOpen(true);
   }
+  function navigatePage(next: "sites" | "history" | "settings") {
+    if (next !== "sites") {
+      if (detailTimer.current) clearTimeout(detailTimer.current);
+      setDetailClosing(false);
+      setSelected(null);
+    }
+    setPage(next);
+  }
   const selectAccount = useCallback(
     (id: string) => {
       if (detailTimer.current) clearTimeout(detailTimer.current);
@@ -969,6 +1032,7 @@ export function Workspace() {
     [accounts],
   );
   function revealAccount(a: Account) {
+    if (!matchesAttention(a, attention, freshnessNow)) setAttention("all");
     const f = revealAccountFilters(a, {
       search,
       group,
@@ -1040,6 +1104,7 @@ export function Workspace() {
     setOnlyLow(saved.filters.onlyLow);
     setArchive(saved.filters.archive);
     setRecordAge(saved.filters.recordAge);
+    setAttention(saved.filters.attention || "all");
     setSort(saved.filters.sort);
     setActiveViewId(saved.id);
     setSelected(null);
@@ -1112,8 +1177,10 @@ export function Workspace() {
     }
   }
   async function logout() {
+    balanceControl.current.cancelled = true;
     try {
       await send("auth/logout", "POST");
+      authVersion.current++;
       setAuth("login");
       setAccounts([]);
       setSelected(null);
@@ -1154,24 +1221,24 @@ export function Workspace() {
     <div className={"app-shell" + (page === "sites" ? " is-sites" : "")}>
       <header className="app-header">
         <Brand />
-        <nav aria-label="主要导航">
+        <nav aria-label="主要导航" data-page={page}>
           <button
             className={page === "sites" ? "active" : ""}
-            onClick={() => setPage("sites")}
+            onClick={() => navigatePage("sites")}
           >
             <Map size={16} />
             站点
           </button>
           <button
             className={page === "history" ? "active" : ""}
-            onClick={() => setPage("history")}
+            onClick={() => navigatePage("history")}
           >
             <History size={16} />
             余额记录
           </button>
           <button
             className={page === "settings" ? "active" : ""}
-            onClick={() => setPage("settings")}
+            onClick={() => navigatePage("settings")}
           >
             <SettingsIcon size={16} />
             设置
@@ -1244,11 +1311,12 @@ export function Workspace() {
       )}
       {undoAction && <UndoNotice action={undoAction} controller={undoController} onUndo={() => void undo()} />}
       </div>}
-      {page === "sites" ? (
+      <ViewActivity mode={page === "sites" ? "visible" : "hidden"}>
         <main className="sites-page">
           <div className="workspace-heading">
+            <VoyageScene kind="heading" />
             <div className="workspace-heading-copy">
-              <span className="workspace-eyebrow"><span className="eyebrow-dot" /> LOCAL-FIRST / LIVE MAP</span>
+              <span className="workspace-eyebrow"><Compass size={14} /> RelayDock · 私人航图</span>
               <h1>站点群岛</h1>
               <p>
                 {filtered.length} 个账号
@@ -1263,12 +1331,14 @@ export function Workspace() {
                 <span className="heading-note">每一次更新，都由你决定。</span>
               </p>
             </div>
+            <div className="heading-companions">
+            <HarborPet accounts={accounts} selected={current} searching={!!search} busy={batch || busy.size > 0 || checkinBusy} motion={settings.motion} now={freshnessNow} open={petOpen} onOpenChange={setPetOpen} onLocate={revealAccount} />
             <div className="balance-summary">
               {Object.entries(summary)
                 .slice(0, 3)
                 .map(([u, v]) => (
                   <div key={u}>
-                    <strong>{displayAmount(v, u.split("::")[0])}</strong>
+                    <strong key={v}>{displayAmount(v, u.split("::")[0])}</strong>
                     <span>
                       {u.includes("::")
                         ? u.split("::")[0] +
@@ -1285,6 +1355,7 @@ export function Workspace() {
                   <span>等待第一笔余额记录</span>
                 </div>
               )}
+            </div>
             </div>
           </div>
           <div className="workspace-toolbar" data-toolbar="floating">
@@ -1501,6 +1572,7 @@ export function Workspace() {
               />
               <button
                 className="button refresh-button"
+                aria-label={batch ? "查询中" : "刷新余额"}
                 onClick={refreshAll}
                 disabled={
                   batch ||
@@ -1524,6 +1596,10 @@ export function Workspace() {
                   });
                 }}><CalendarCheck size={15} /><span>批量签到</span></button>
             </div>
+          </div>
+          <div className="attention-filters" role="group" aria-label="待处理站点">
+            {([['all','全部'],['low','低余额'],['stale','记录过期'],['unknown','余额未知'],['failed','查询失败']] as const).map(([value,label]) => <button key={value} aria-pressed={attention === value} onClick={() => { setAttention(value); setOnlyLow(false); setRecordAge("any"); }}><span>{label}</span><output>{attentionBase.filter(a => matchesAttention(a, value, freshnessNow)).length}</output></button>)}
+            {balanceRows.length > 0 && <button onClick={() => setBalanceBatchOpen(true)}><Activity size={14} />{batch ? "查询进度" : "查询结果"}</button>}
           </div>
           {loadError && (
             <p className="form-error" role="alert">
@@ -1569,6 +1645,7 @@ export function Workspace() {
                     setOnlyLow(false);
                     setArchive("active");
                     setRecordAge("any");
+                    setAttention("all");
                   }}
                 >
                   清除筛选
@@ -1592,6 +1669,7 @@ export function Workspace() {
                 density={settings.mapDensity || "standard"}
                 inkColor={settings.inkColor ?? null}
                 inkOpacity={settings.inkOpacity ?? 100}
+                inkStyle={settings.inkStyle ?? "wake"}
                 onBackgroundChange={(background) =>
                   updateSettings({ ...settings, mapBackground: background })
                 }
@@ -1625,6 +1703,7 @@ export function Workspace() {
                     else if (undo) notify(undo.message);
                   }}
                 />
+                <ListCruise enabled={settings.motion && !batchMode && !current && !batchDialogOpen}>
                 <div className="list-header">
                   {batchMode && (
                     <SelectionBox
@@ -1728,12 +1807,15 @@ export function Workspace() {
                     </button>
                   </div>
                 ))}
+                </ListCruise>
               </div>
             )}
+            {current && <button className="detail-backdrop" aria-label="收起账号详情" onClick={closeAccount} tabIndex={-1} />}
             {current && (
               <aside
                 key={current.id}
-                className="account-detail"
+                className={"account-detail group-color-" + groupColorIndex(current.group)}
+                style={groupColorStyle(current.group, groupColors.colors)}
                 data-state={detailClosing ? "closing" : "open"}
                 aria-label="当前账号详情"
               >
@@ -1973,7 +2055,7 @@ export function Workspace() {
                       测试连接
                     </button>
                   )}
-                  <details>
+                  <details ref={detailMenu} className="filter-menu">
                     <summary aria-label="更多账号操作">
                       <MoreHorizontal size={17} />
                     </summary>
@@ -2024,9 +2106,10 @@ export function Workspace() {
             <span>不用急，按自己的节奏。</span>
           </footer>
         </main>
-      ) : page === "history" ? (
+      </ViewActivity>
+      {page === "history" ? (
         <HistoryPage accounts={accounts} send={send} />
-      ) : (
+      ) : page === "settings" ? (
         <SettingsPage
           settings={settings}
           onSettings={updateSettings}
@@ -2038,13 +2121,15 @@ export function Workspace() {
           send={send}
           onImported={load}
           onLogout={() => {
+            balanceControl.current.cancelled = true;
+            authVersion.current++;
             setAuth("login");
             setCsrf("");
             setAccounts([]);
           }}
           notify={notify}
         />
-      )}
+      ) : null}
       {modelOpen && current && (
         <ModelInsightPanel
           key={current.id}
@@ -2185,6 +2270,7 @@ export function Workspace() {
           </button>
         </div>
       </Modal>
+      <BalanceBatchPanel open={balanceBatchOpen} rows={balanceRows} running={batch} started={balanceStarted} cancelled={balanceCancelled} scope={balanceScope} skipped={balanceSkipped} route={balanceRoute === "proxy" ? "代理线路" : "直连线路"} onClose={() => setBalanceBatchOpen(false)} onStart={() => void startBalanceBatch()} onCancel={() => { balanceControl.current.cancelled = true; setBalanceCancelled(true); }} onRetry={() => void startBalanceBatch(true)} />
       <Modal
         open={commands}
         onClose={() => setCommands(false)}
@@ -2218,6 +2304,7 @@ export function Workspace() {
                   setCommands(false);
                   setPage("sites");
                   setOnlyLow(true);
+                  setAttention("all");
                 }}
               >
                 <AlertCircle size={16} />
@@ -2226,7 +2313,7 @@ export function Workspace() {
               <button
                 onClick={() => {
                   setCommands(false);
-                  setPage("settings");
+                  navigatePage("settings");
                 }}
               >
                 <SettingsIcon size={16} />
@@ -2256,6 +2343,7 @@ export function Workspace() {
                   setOnlyLow(false);
                   setArchive("active");
                     setRecordAge("any");
+                    setAttention("all");
                   selectAccount(a.id);
                 }}
               >

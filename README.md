@@ -16,6 +16,8 @@
 
 ## 本机启动（Node.js 22.20+）
 
+快速导航：[日常使用](#使用) · [平台支持](#多平台余额查询) · [Docker 部署](#docker) · [备份与迁移](#备份与迁移) · [网络排查](docs/QUERYING.md) · [问题反馈](https://github.com/sxxso/relaydock/issues/new/choose)。
+
 ```powershell
 npm ci
 npm run setup

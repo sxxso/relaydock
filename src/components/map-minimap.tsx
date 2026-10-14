@@ -1,6 +1,6 @@
 "use client";
 import { useRef, type RefObject } from "react";
-import { groupColorIndex, type Island, type MapNode } from "@/lib/map-layout";
+import { groupColorIndex, islandPath, type Island, type MapNode } from "@/lib/map-layout";
 import { groupColorStyle, type GroupColor } from "@/lib/group-colors";
 import {
   overviewBounds,
@@ -146,12 +146,8 @@ export function MapMinimap({
             }}
           >
             <title>{i.name}</title>
-            <rect
-              x={i.x}
-              y={i.y}
-              width={i.width}
-              height={i.height}
-              rx={Math.min(i.width, i.height) * 0.3}
+            <path
+              d={islandPath(i)}
               className={`minimap-island island-${groupColorIndex(i.name)}`}
             />
           </g>

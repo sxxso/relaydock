@@ -125,15 +125,18 @@ export function layoutIslands(
 }
 export function islandPath(i: Island) {
   let points: { x: number; y: number }[] = [];
-  for (let step = 0; step < 24; step++) {
-    let angle = (step / 24) * Math.PI * 2,
-      jitter = 1 + Math.sin(step * 2.37 + (i.seed % 100)) * 0.045;
+  const count = 48, phase = (i.seed % 628) / 100;
+  for (let step = 0; step < count; step++) {
+    const angle = (step / count) * Math.PI * 2,
+      coast = 0.94 + Math.sin(angle * 3 + phase) * 0.035 + Math.cos(angle * 5 - phase) * 0.022,
+      x = Math.cos(angle), y = Math.sin(angle);
+    // A soft rectangular coastline keeps the account grid inside the land.
     points.push({
-      x: i.x + i.width / 2 + ((Math.cos(angle) * i.width) / 2) * jitter,
-      y: i.y + i.height / 2 + ((Math.sin(angle) * i.height) / 2) * jitter,
+      x: i.x + i.width / 2 + Math.sign(x) * Math.pow(Math.abs(x), 0.72) * i.width / 2 * coast,
+      y: i.y + i.height / 2 + Math.sign(y) * Math.pow(Math.abs(y), 0.72) * i.height / 2 * coast,
     });
   }
-  let last = points[23],
+  let last = points[count - 1],
     first = points[0],
     path =
       "M" +
@@ -141,7 +144,7 @@ export function islandPath(i: Island) {
       "," +
       ((last.y + first.y) / 2).toFixed(1);
   points.forEach((p, n) => {
-    let next = points[(n + 1) % 24];
+    let next = points[(n + 1) % count];
     path +=
       " Q" +
       p.x.toFixed(1) +

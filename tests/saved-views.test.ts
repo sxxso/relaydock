@@ -56,6 +56,16 @@ function account(overrides: Partial<Account> = {}): Account {
 }
 
 describe("saved view filters", () => {
+  it("distinguishes stale records, unknown balances and failed queries and roundtrips the new filter", () => {
+    const list = [account({id:"unknown", balance:null, lastSnapshotAt:null}), account({id:"old",lastSnapshotAt:"2026-01-01T00:00:00Z"}), account({id:"failed",lastSyncStatus:"error",lastSnapshotAt:"2026-10-14T00:00:00Z"})];
+    const now = Date.parse("2026-10-14T01:00:00Z");
+    for(const [attention, id] of [["unknown","unknown"],["stale","old"],["failed","failed"]] as const) {
+      const filters = savedViewFiltersSchema.parse({...DEFAULT_SAVED_VIEW_FILTERS,attention});
+      expect(filterAccounts(list,filters,now).map(a=>a.id)).toEqual([id]);
+      expect(filters.attention).toBe(attention);
+    }
+    expect(savedViewFiltersSchema.parse(DEFAULT_SAVED_VIEW_FILTERS).attention).toBeUndefined();
+  });
   it("normalizes an empty filter set to the current workspace defaults", () => {
     expect(savedViewFiltersSchema.parse({})).toEqual(DEFAULT_SAVED_VIEW_FILTERS);
   });

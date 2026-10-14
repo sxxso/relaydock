@@ -849,11 +849,11 @@ summary::-webkit-details-marker {
   display: flex;
   align-items: center;
   gap: 3px;
-  border: 2px solid var(--ink) !important;
-  background: var(--surface) !important;
-  border-radius: 2px !important;
-  box-shadow: 3px 3px 0 rgba(23, 37, 61, 0.12) !important;
-  backdrop-filter: none !important;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: 6px;
+  box-shadow: none;
+  backdrop-filter: none;
   padding: 3px 6px;
   color: var(--ink);
   font-size: 11px;
@@ -897,11 +897,11 @@ summary::-webkit-details-marker {
 }
 /* The match counter owns its frame; select/index frames live on their controls. */
 .map-match-control {
-  border: 2px solid var(--ink) !important;
-  border-radius: 2px !important;
-  background: var(--surface) !important;
-  box-shadow: 3px 3px 0 rgba(23, 37, 61, 0.12) !important;
-  backdrop-filter: none !important;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
+  box-shadow: none;
+  backdrop-filter: none;
 }
 .map-group-index,
 .map-group-index button,
@@ -964,6 +964,7 @@ summary::-webkit-details-marker {
   color: var(--muted);
   font-size: 11px;
 }
+.detail-backdrop { display: none; }
 .detail-top .icon-button {
   margin-right: -9px;
   min-height: 26px;
@@ -1169,9 +1170,7 @@ summary::-webkit-details-marker {
   padding: 5px;
 }
 .detail-secondary details > div {
-  position: absolute;
-  bottom: 34px;
-  right: 0;
+  position: fixed;
   min-width: 147px;
   border: 1px solid var(--line);
   background: var(--surface);
@@ -2277,8 +2276,10 @@ summary::-webkit-details-marker {
     gap: 5px;
   }
   .command-trigger {
-    display: none;
+    display: inline-flex;
+    width: 30px;
   }
+  .command-trigger kbd { display: none; }
   .header-actions > .icon-button {
     min-width: 30px;
     min-height: 35px;
@@ -2441,6 +2442,31 @@ summary::-webkit-details-marker {
     border-radius: 2px;
     padding: 16px 20px;
     box-shadow: 6px 6px 0 rgba(23, 37, 61, 0.14);
+  }
+  .detail-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 29;
+    background: #17253d38;
+    border: 0;
+  }
+  .account-detail .detail-top {
+    position: sticky;
+    top: -16px;
+    z-index: 2;
+    margin: -16px -20px 12px;
+    padding: 10px 20px;
+    min-height: 48px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
+  }
+  .account-detail .detail-top .icon-button {
+    min-width: 36px;
+    min-height: 36px;
+  }
+  .app-shell .workspace-body:has(.account-detail) {
+    z-index: 20;
   }
   .detail-identity h2 {
     font-size: 20px;
